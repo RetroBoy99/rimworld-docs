@@ -1,0 +1,99 @@
+<div class="type-view">
+  <div *ngIf="loading()" class="loading">
+    <div class="spinner"></div>
+    <p>Loading type information...</p>
+  </div>
+  
+  <div *ngIf="!loading() && error()" class="error">
+    <h2>Error</h2>
+    <p>{{ error() }}</p>
+    <a routerLink="/docs" class="back-btn">Back to Documentation</a>
+  </div>
+  
+  <div *ngIf="!loading() && !error() && type()">
+    <div class="type-header">
+      <div class="breadcrumb">
+        <a routerLink="/docs">Documentation</a>
+        <span class="separator">/</span>
+        <a [routerLink]="getCategoryRoute()">{{ getCategoryDisplayName() }}</a>
+        <span class="separator">/</span>
+        <span class="current">{{ type()!.name }}</span>
+      </div>
+
+      <div class="type-info">
+        <div class="type-icon">{{ getTypeIcon(type()!) }}</div>
+        <div class="type-details">
+          <h1>{{ type()!.name }}</h1>
+          <div class="type-meta">
+            <span class="type-kind">{{ type()!.kind }}</span>
+            <span class="file-info">{{ type()!.file }}:{{ type()!.line }}</span>
+            <span class="member-count">{{ type()!.member_count }} members</span>
+          </div>
+          
+          <div class="type-modifiers" *ngIf="type()!.modifiers && type()!.modifiers.length > 0">
+            <span class="label">Modifiers:</span>
+            <span *ngFor="let modifier of type()!.modifiers" class="modifier-tag">{{ modifier }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="type-content">
+      <div *ngIf="type()!.members.length > 0" class="members-section">
+        <h2>Members</h2>
+        <div class="members-list">
+          <div *ngFor="let member of type()!.members; trackBy: trackBySignature" class="member-item">
+            <div class="member-header">
+              <span class="member-icon">{{ getMemberIcon(member) }}</span>
+              <span class="member-kind">{{ member.kind }}</span>
+              <span class="member-name">{{ member.name }}</span>
+              <span class="member-line">Line {{ member.line }}</span>
+            </div>
+            
+            <div class="member-modifiers" *ngIf="member.modifiers && member.modifiers.length > 0">
+              <span *ngFor="let modifier of member.modifiers" class="modifier-tag small">{{ modifier }}</span>
+            </div>
+            
+            <div class="member-signature" [innerHTML]="formatSignature(member.signature)"></div>
+            
+            <div class="member-details">
+              <div *ngIf="member.return_type" class="return-type-section">
+                <span class="return-type">Returns: 
+                  <a 
+                    *ngIf="typeExists(member.return_type); else nonLinkReturnType"
+                    [routerLink]="['/docs/type', member.return_type]"
+                    class="return-type-link"
+                    [title]="'Go to ' + member.return_type"
+                  >
+                    {{ member.return_type }}
+                  </a>
+                  <ng-template #nonLinkReturnType>
+                    <code>{{ member.return_type }}</code>
+                  </ng-template>
+                </span>
+              </div>
+
+              <div *ngIf="getReferencedTypes(member.signature).length > 0" class="referenced-types-section">
+                <span class="referenced-types-label">Referenced Types:</span>
+                <div class="referenced-types-list">
+                  <a 
+                    *ngFor="let typeRef of getReferencedTypes(member.signature)" 
+                    [routerLink]="['/docs/type', typeRef.typeName]"
+                    class="referenced-type-link"
+                    [title]="'Go to ' + typeRef.typeName"
+                  >
+                    {{ typeRef.typeName }}
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="type()!.members.length === 0" class="no-members">
+        <p>This {{ type()!.kind }} has no members.</p>
+      </div>
+    </div>
+  </div>
+</div>

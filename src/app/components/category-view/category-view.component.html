@@ -1,0 +1,97 @@
+<div class="category-view">
+  <div *ngIf="loading()" class="loading">
+    <div class="spinner"></div>
+    <p>Loading {{ getCategoryDisplayName() }}...</p>
+  </div>
+  
+  <div *ngIf="!loading() && error()" class="error">
+    <p>{{ error() }}</p>
+    <button (click)="ngOnInit()" class="retry-btn">Retry</button>
+  </div>
+  
+  <div *ngIf="!loading() && !error()" class="category-content">
+    <div class="category-header">
+      <div class="breadcrumb">
+        <a routerLink="/docs">Documentation</a>
+        <span class="separator">/</span>
+        <span class="current">{{ getCategoryDisplayName() }}</span>
+      </div>
+      
+      <div class="header-content">
+        <h1>{{ getCategoryDisplayName() }}</h1>
+        <div class="category-stats">
+          <span class="total-count">{{ totalTypes() }} total</span>
+          <span class="showing-count">Showing {{ types().length }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="category-navigation">
+      <nav class="category-tabs">
+        <a [routerLink]="['/docs/category/class']" 
+           [class.active]="category() === 'class'" 
+           class="category-tab">
+          🔷 Classes
+        </a>
+        <a [routerLink]="['/docs/category/enum']" 
+           [class.active]="category() === 'enum'" 
+           class="category-tab">
+          🔹 Enums
+        </a>
+        <a [routerLink]="['/docs/category/interface']" 
+           [class.active]="category() === 'interface'" 
+           class="category-tab">
+          🔶 Interfaces
+        </a>
+        <a [routerLink]="['/docs/category/struct']" 
+           [class.active]="category() === 'struct'" 
+           class="category-tab">
+          🔸 Structs
+        </a>
+      </nav>
+    </div>
+
+    <div class="types-grid">
+      <a 
+        *ngFor="let type of types(); trackBy: trackByType"
+        [routerLink]="['/docs/type', type.name]" 
+        class="type-card"
+        [class]="type.kind"
+      >
+        <div class="type-header">
+          <span class="type-icon">{{ getTypeIcon(type) }}</span>
+          <div class="type-info">
+            <h3 class="type-name">{{ type.name }}</h3>
+            <div class="type-meta">
+              <span class="type-kind">{{ type.kind }}</span>
+              <span class="member-count">{{ getMemberCount(type) }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="type-details">
+          <div class="file-info">{{ type.file }}:{{ type.line }}</div>
+          <div class="type-modifiers" *ngIf="type.modifiers && type.modifiers.length > 0">
+            <span *ngFor="let modifier of type.modifiers.slice(0, 3)" class="modifier-tag">{{ modifier }}</span>
+            <span *ngIf="type.modifiers.length > 3" class="more-modifiers">+{{ type.modifiers.length - 3 }}</span>
+          </div>
+        </div>
+      </a>
+    </div>
+    
+    <div class="pagination-section" *ngIf="hasMoreTypes() || loadingMore()">
+      <button 
+        *ngIf="!loadingMore()" 
+        (click)="loadMoreTypes()" 
+        class="load-more-btn"
+      >
+        Load More {{ getCategoryDisplayName() }} ({{ totalTypes() - types().length }} remaining)
+      </button>
+      
+      <div *ngIf="loadingMore()" class="loading-more">
+        <div class="spinner"></div>
+        <span>Loading more {{ getCategoryDisplayName().toLowerCase() }}...</span>
+      </div>
+    </div>
+  </div>
+</div>

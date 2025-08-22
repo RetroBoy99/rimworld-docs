@@ -1,0 +1,87 @@
+<div class="namespace-view">
+  <div *ngIf="loading()" class="loading">
+    <div class="spinner"></div>
+    <p>Loading namespace...</p>
+  </div>
+  
+  <div *ngIf="!loading() && error()" class="error">
+    <h2>Error</h2>
+    <p>{{ error() }}</p>
+    <a routerLink="/docs" class="back-btn">Back to Documentation</a>
+  </div>
+  
+  <div *ngIf="!loading() && !error() && namespace()">
+    <div class="namespace-header">
+      <div class="breadcrumb">
+        <a routerLink="/docs">Documentation</a>
+        <span class="separator">/</span>
+        <span class="current">{{ getDisplayName(namespaceName()) }}</span>
+      </div>
+
+      <div class="namespace-info">
+        <h1>{{ getDisplayName(namespaceName()) }}</h1>
+        <div class="namespace-meta">
+          <span class="type-count">{{ totalTypes() }} types</span>
+          <span class="namespace-description">
+            Browse all types in this namespace
+          </span>
+          <span class="pagination-info" *ngIf="totalPages() > 1">
+            Showing {{ types().length }} of {{ totalTypes() }} types
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="namespace-content">
+      <div class="types-grid">
+        <a 
+          *ngFor="let type of types(); trackBy: trackByType"
+          [routerLink]="['/docs/type', type.name]" 
+          class="type-card"
+          [class]="type.kind"
+        >
+          <div class="type-header">
+            <span class="type-icon">{{ getTypeIcon(type) }}</span>
+            <div class="type-info">
+              <h3 class="type-name">{{ type.name }}</h3>
+              <div class="type-meta">
+                <span class="type-kind">{{ type.kind }}</span>
+                <span class="member-count">{{ getMemberCount(type) }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="type-details">
+            <div class="file-info">{{ type.file }}:{{ type.line }}</div>
+            <div *ngIf="type.members.length > 0" class="members-preview">
+              <span class="preview-label">Sample members:</span>
+              <div class="members-list">
+                <span *ngFor="let member of type.members.slice(0, 2); trackBy: trackBySignature" class="member-item">
+                  {{ member.signature.split('(')[0] }}
+                </span>
+                <span *ngIf="type.members.length > 2" class="more-members">
+                  +{{ type.members.length - 2 }} more
+                </span>
+              </div>
+            </div>
+          </div>
+        </a>
+      </div>
+      
+      <div class="load-more-section" *ngIf="hasMoreTypes() || loadingMore()">
+        <button 
+          *ngIf="!loadingMore()" 
+          (click)="loadMoreTypes()" 
+          class="load-more-btn"
+        >
+          Load More Types ({{ totalTypes() - types().length }} remaining)
+        </button>
+        
+        <div *ngIf="loadingMore()" class="loading-more">
+          <div class="spinner"></div>
+          <span>Loading more types...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

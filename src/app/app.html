@@ -1,0 +1,49 @@
+<div class="app-container">
+  <header class="app-header">
+    <div class="header-content">
+      <div class="logo">
+        <h1>{{ title() }}</h1>
+        <span class="subtitle">Rimworld Game Documentation</span>
+      </div>
+      
+      <nav class="main-nav">
+        <a routerLink="/docs" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+          Documentation
+        </a>
+        <div class="nav-dropdown">
+          <a href="#" class="dropdown-toggle">Categories ▼</a>
+          <div class="dropdown-menu">
+            <a routerLink="/docs/category/class" routerLinkActive="active">🔷 Classes</a>
+            <a routerLink="/docs/category/enum" routerLinkActive="active">🔹 Enums</a>
+            <a routerLink="/docs/category/interface" routerLinkActive="active">🔶 Interfaces</a>
+            <a routerLink="/docs/category/struct" routerLinkActive="active">🔸 Structs</a>
+          </div>
+        </div>
+        <a routerLink="/search" routerLinkActive="active">
+          Search
+        </a>
+      </nav>
+
+      <div class="search-box">
+        <input 
+          type="text" 
+          placeholder="Search classes, methods..." 
+          [ngModel]="searchQuery()"
+          (ngModelChange)="searchQuery.set($event)"
+          (keyup.enter)="onSearch()"
+        >
+        <button (click)="onSearch()" class="search-btn">
+          🔍
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <router-outlet></router-outlet>
+  </main>
+
+  <footer class="app-footer">
+    <p>&copy; 2024 Rimworld Documentation. Generated from game source code.</p>
+  </footer>
+</div>

@@ -1,0 +1,99 @@
+<div class="search-page">
+  <div class="search-header">
+    <h1>Search Documentation</h1>
+    <p>Search through Rimworld classes, methods, and files</p>
+    
+    <div class="search-box">
+      <input 
+        type="text" 
+        placeholder="Enter search terms..." 
+        [ngModel]="searchQuery()"
+        (ngModelChange)="searchQuery.set($event)"
+        (keyup.enter)="onSearch()"
+        class="search-input"
+      >
+      <button (click)="onSearch()" class="search-btn">
+        🔍 Search
+      </button>
+    </div>
+  </div>
+
+  <div class="search-content">
+    <div *ngIf="loading()" class="loading">
+      <div class="spinner"></div>
+      <p>Searching...</p>
+    </div>
+    
+    <div *ngIf="!loading() && hasSearched()">
+      <div *ngIf="searchResults().length > 0">
+        <div class="results-header">
+          <h2>Search Results</h2>
+          <p>{{ searchResults().length }} result{{ searchResults().length === 1 ? '' : 's' }} found</p>
+        </div>
+
+        <div class="results-list">
+          <div *ngFor="let result of searchResults(); trackBy: trackByTypeName" class="result-item">
+            <div class="result-header">
+              <span class="type-icon">{{ getTypeIcon(result.type) }}</span>
+              <div class="result-info">
+                <a 
+                  [routerLink]="['/docs/type', result.type.name]" 
+                  class="type-name"
+                >
+                  {{ result.type.name }}
+                </a>
+                <div class="result-meta">
+                  <a [routerLink]="getCategoryRoute(result.category)" class="category-link">{{ getCategoryDisplayName(result.category) }}</a>
+                  <span class="type-kind">{{ result.type.kind }}</span>
+                  <span class="file-info">{{ result.type.file }}:{{ result.type.line }}</span>
+                </div>
+              </div>
+              <span 
+                class="match-type"
+                [style.background-color]="getMatchTypeColor(result.matchType)"
+              >
+                {{ getMatchTypeLabel(result.matchType) }}
+              </span>
+            </div>
+            
+            <div *ngIf="result.type.members.length > 0" class="members-preview">
+              <span class="preview-label">Members:</span>
+              <div class="members-list">
+                <span *ngFor="let member of result.type.members.slice(0, 3); trackBy: trackBySignature" class="member-item">
+                  {{ member.signature.split('(')[0] }}
+                </span>
+                <span *ngIf="result.type.members.length > 3" class="more-members">
+                  +{{ result.type.members.length - 3 }} more
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div *ngIf="searchResults().length === 0" class="no-results">
+        <h2>No Results Found</h2>
+        <p>Try searching with different keywords or browse the documentation manually.</p>
+        <a routerLink="/docs" class="browse-btn">Browse Documentation</a>
+      </div>
+    </div>
+    
+    <div *ngIf="!loading() && !hasSearched()" class="search-tips">
+      <h2>Search Tips</h2>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <h3>🔍 Search by Name</h3>
+          <p>Search for class names, method names, or file names</p>
+        </div>
+        <div class="tip-card">
+          <h3>📁 File Search</h3>
+          <p>Search by file name to find all types in that file</p>
+        </div>
+        <div class="tip-card">
+          <h3>⚡ Method Search</h3>
+          <p>Search for method signatures or keywords</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
