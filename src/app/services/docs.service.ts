@@ -87,7 +87,7 @@ export class DocsService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.get<DocsIndex>('assets/docs_index.gz').pipe(
+    return this.http.get<DocsIndex>('assets/docs_index.json').pipe(
       map(data => {
         // Store the data and prepare for lazy loading
         this.docsData.set(data);
