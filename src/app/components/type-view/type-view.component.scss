@@ -1,674 +1,201 @@
+// Common variables
+$primary: #ff6b35;
+$secondary: #4fc3f7;
+$bg-dark: #2d2d2d;
+$bg-darker: #1a1a1a;
+$border: #404040;
+$text-light: #fff;
+$text-muted: #888;
+$text-dim: #666;
+
+// Mixins
+@mixin flex-center { display: flex; align-items: center; }
+@mixin flex-between { display: flex; align-items: center; justify-content: space-between; }
+@mixin card { background: $bg-dark; border: 1px solid $border; border-radius: 8px; }
+@mixin button-base { 
+  border: none; cursor: pointer; transition: all 0.2s ease; border-radius: 4px;
+  &:hover { transform: translateY(-1px); }
+}
+@mixin link-style($bg, $hover-bg) {
+  background: $bg; color: white; text-decoration: none; padding: 0.25rem 0.5rem;
+  border-radius: 4px; font-size: 0.8rem; font-weight: 500; transition: all 0.2s ease;
+  &:hover { background: $hover-bg; transform: translateY(-1px); }
+}
+
 .type-view {
-  .loading {
-    text-align: center;
-    padding: 3rem;
+  .loading, .error {
+    text-align: center; padding: 3rem;
+    p { color: $text-muted; font-size: 1.1rem; margin: 0 0 1rem 0; }
+  }
 
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid #404040;
-      border-top: 4px solid #ff6b35;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem auto;
-    }
-
-    p {
-      color: #888;
-      font-size: 1.1rem;
-    }
+  .loading .spinner {
+    width: 40px; height: 40px; border: 4px solid $border; border-top: 4px solid $primary;
+    border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem auto;
   }
 
   .error {
-    text-align: center;
-    padding: 3rem;
-    background: rgba(255, 0, 0, 0.1);
-    border: 1px solid rgba(255, 0, 0, 0.3);
-    border-radius: 8px;
-
-    h2 {
-      color: #ff6b6b;
-      margin-bottom: 1rem;
-    }
-
-    p {
-      color: #ff6b6b;
-      margin-bottom: 1.5rem;
-    }
-
-    .back-btn {
-      background: #ff6b35;
-      color: white;
-      text-decoration: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 6px;
-      font-weight: 500;
-      transition: background 0.2s ease;
-
-      &:hover {
-        background: #e55a2b;
-      }
-    }
+    background: rgba(255, 0, 0, 0.1); border: 1px solid rgba(255, 0, 0, 0.3); border-radius: 8px;
+    h2 { color: #ff6b6b; margin-bottom: 1rem; }
+    p { color: #ff6b6b; }
+    .back-btn { @include button-base; background: $primary; color: white; padding: 0.75rem 1.5rem; font-weight: 500; }
   }
 
   .type-header {
     margin-bottom: 2rem;
-
     .breadcrumb {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1.5rem;
-      font-size: 0.875rem;
-      color: #888;
-
-      a {
-        color: #ff6b35;
-        text-decoration: none;
-
-        &:hover {
-          text-decoration: underline;
-        }
-      }
-
-      .separator {
-        color: #666;
-      }
-
-      .current {
-        color: #fff;
-        font-weight: 500;
-      }
+      @include flex-center; gap: 0.5rem; margin-bottom: 1.5rem; font-size: 0.875rem; color: $text-muted;
+      a { color: $primary; text-decoration: none; &:hover { text-decoration: underline; } }
+      .separator { color: $text-dim; }
+      .current { color: $text-light; font-weight: 500; }
     }
 
     .type-info {
-      display: flex;
-      align-items: center;
-      gap: 1.5rem;
-      padding: 2rem;
-      background: #2d2d2d;
-      border: 1px solid #404040;
-      border-radius: 12px;
-
-      .type-icon {
-        font-size: 3rem;
-        width: 60px;
-        text-align: center;
-      }
-
+      @include flex-center; gap: 1.5rem; padding: 2rem; @include card; border-radius: 12px;
+      .type-icon { font-size: 3rem; width: 60px; text-align: center; }
       .type-details {
         flex: 1;
-
-        h1 {
-          margin: 0 0 0.5rem 0;
-          font-size: 2rem;
-          color: #ff6b35;
-        }
-
+        h1 { margin: 0 0 0.5rem 0; font-size: 2rem; color: $primary; }
         .type-meta {
-          display: flex;
-          gap: 1.5rem;
-          font-size: 0.875rem;
-
-          .type-kind {
-            background: rgba(255, 107, 53, 0.2);
-            color: #ff6b35;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            text-transform: capitalize;
-            font-weight: 500;
-          }
-
-          .file-info {
-            color: #888;
-            font-family: 'Courier New', monospace;
-          }
-
-          .member-count {
-            color: #888;
-          }
-        }
-
-        .type-modifiers, .base-types, .generic-params, .derived-types {
-          margin-top: 0.75rem;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          flex-wrap: wrap;
-
-          .label {
-            font-weight: 600;
-            color: #ccc;
-            font-size: 0.875rem;
-          }
-        }
-
-        .derived-types {
-          flex-direction: column;
-          align-items: flex-start;
-
-          .derived-types-header {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.25rem 0;
-            transition: all 0.2s ease;
-            width: 100%;
-
-            &:hover {
-              background: rgba(255, 255, 255, 0.05);
-              border-radius: 4px;
-              padding-left: 0.5rem;
-              padding-right: 0.5rem;
-            }
-
-            .toggle-icon {
-              color: #4fc3f7;
-              font-size: 0.75rem;
-              transition: transform 0.2s ease;
-              margin-left: 0.5rem;
-            }
-          }
-
-          .derived-types-list {
-            margin-top: 0.5rem;
-            padding-left: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            border-left: 2px solid rgba(79, 195, 247, 0.3);
-            padding-left: 0.75rem;
-            margin-left: 0.5rem;
-            width: 100%;
-          }
-        }
-
-        .modifier-tag {
-          background: #4fc3f7;
-          color: white;
-          padding: 0.2rem 0.4rem;
-          border-radius: 3px;
-          font-size: 0.75rem;
-          font-weight: 500;
-
-          &.small {
-            font-size: 0.7rem;
-            padding: 0.1rem 0.3rem;
-          }
-        }
-
-        .base-type-tag {
-          background: #ff9800;
-          color: white;
-          padding: 0.2rem 0.4rem;
-          border-radius: 3px;
-          font-size: 0.75rem;
-          font-weight: 500;
-        }
-
-        .base-type-link, .derived-type-link {
-          background: #ff9800;
-          color: white;
-          padding: 0.2rem 0.4rem;
-          border-radius: 3px;
-          font-size: 0.75rem;
-          font-weight: 500;
-          text-decoration: none;
-          transition: all 0.2s ease;
-          cursor: pointer;
-
-          &:hover {
-            background: #f57c00;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
-          }
-
-          &:visited {
-            color: white;
-          }
-        }
-
-        .derived-type-link {
-          display: inline-block;
-          margin-bottom: 0.25rem;
-        }
-
-        .generic-param-tag {
-          background: #9c27b0;
-          color: white;
-          padding: 0.2rem 0.4rem;
-          border-radius: 3px;
-          font-size: 0.75rem;
-          font-weight: 500;
+          @include flex-center; gap: 1.5rem; font-size: 0.875rem;
+          .type-kind { background: rgba($primary, 0.2); color: $primary; padding: 0.25rem 0.75rem; border-radius: 20px; text-transform: capitalize; font-weight: 500; }
+          .file-info, .member-count { color: $text-muted; }
+          .file-info { font-family: 'Courier New', monospace; }
         }
       }
     }
   }
 
-  .type-content {
-    .using-statements {
-      background: #1a1a1a;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 1rem;
-      margin-bottom: 2rem;
+  // Common tag styles
+  .modifier-tag, .base-type-tag, .generic-param-tag {
+    padding: 0.2rem 0.4rem; border-radius: 3px; font-size: 0.75rem; font-weight: 500; color: white;
+    &.small { font-size: 0.7rem; padding: 0.1rem 0.3rem; }
+  }
+  .modifier-tag { background: $secondary; }
+  .base-type-tag, .generic-param-tag { background: #ff9800; }
+  .generic-param-tag { background: #9c27b0; }
 
-      h3 {
-        margin: 0 0 0.75rem 0;
-        color: #fff;
-        font-size: 1rem;
-      }
+  // Link styles
+  .base-type-link, .derived-type-link {
+    @include link-style(#ff9800, #f57c00); display: inline-block;
+    &:visited { color: white; }
+  }
+  .derived-type-link { margin-bottom: 0.25rem; }
 
-      .using-list {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
+  // Type modifiers and inheritance sections
+  .type-modifiers, .base-types, .generic-params, .derived-types {
+    margin-top: 0.75rem; @include flex-center; gap: 0.5rem; flex-wrap: wrap;
+    .label { font-weight: 600; color: #ccc; font-size: 0.875rem; }
+  }
 
-        .using-tag {
-          background: #2a2a2a;
-          color: #81c784;
-          padding: 0.25rem 0.5rem;
-          border-radius: 4px;
-          font-family: monospace;
-          font-size: 0.8rem;
-        }
-      }
+  .derived-types {
+    flex-direction: column; align-items: flex-start;
+    .derived-types-header {
+      @include flex-between; cursor: pointer; padding: 0.25rem 0; transition: all 0.2s ease; width: 100%;
+      &:hover { background: rgba(255, 255, 255, 0.05); border-radius: 4px; padding: 0 0.5rem; }
+      .toggle-icon { color: $secondary; font-size: 0.75rem; margin-left: 0.5rem; }
     }
+    .derived-types-list {
+      margin-top: 0.5rem; padding-left: 1.75rem; display: flex; flex-direction: column; gap: 0.25rem;
+      border-left: 2px solid rgba($secondary, 0.3); width: 100%;
+    }
+  }
 
+  .type-content {
     .members-section {
       .members-header {
         margin-bottom: 1.5rem;
-        
-        h2 {
-          margin: 0 0 1rem 0;
-          color: #fff;
-          font-size: 1.5rem;
-          padding-bottom: 0.5rem;
-          border-bottom: 1px solid #404040;
-        }
-        
+        h2 { margin: 0 0 1rem 0; color: $text-light; font-size: 1.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid $border; }
         .member-filters {
-          display: flex;
-          align-items: center;
-          gap: 1rem;
-          flex-wrap: wrap;
-          
-          .filter-label {
-            color: #888;
-            font-size: 0.875rem;
-            font-weight: 500;
-          }
-          
-          .filter-buttons {
-            display: flex;
-            gap: 0.5rem;
-            flex-wrap: wrap;
-          }
-          
+          @include flex-center; gap: 1rem; flex-wrap: wrap;
+          .filter-label { color: $text-muted; font-size: 0.875rem; font-weight: 500; }
+          .filter-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
           .filter-btn {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #2d2d2d;
-            border: 1px solid #404040;
-            color: #888;
-            padding: 0.5rem 0.75rem;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 0.875rem;
-            
-            .filter-icon {
-              font-size: 1rem;
-            }
-            
-            .filter-count {
-              color: #666;
-              font-size: 0.8rem;
-            }
-            
-            &:hover {
-              border-color: #ff6b35;
-              color: #ccc;
-            }
-            
-            &.active {
-              background: #ff6b35;
-              border-color: #ff6b35;
-              color: white;
-              
-              .filter-count {
-                color: rgba(255, 255, 255, 0.8);
-              }
-            }
+            @include flex-center; gap: 0.5rem; background: $bg-dark; border: 1px solid $border; color: $text-muted;
+            padding: 0.5rem 0.75rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; font-size: 0.875rem;
+            .filter-icon { font-size: 1rem; }
+            .filter-count { color: $text-dim; font-size: 0.8rem; }
+            &:hover { border-color: $primary; color: #ccc; }
+            &.active { background: $primary; border-color: $primary; color: white; .filter-count { color: rgba(255, 255, 255, 0.8); } }
           }
         }
       }
 
       .members-list {
-        display: grid;
-        gap: 1rem;
-
+        display: grid; gap: 1rem;
         .member-item {
-          background: #2d2d2d;
-          border: 1px solid #404040;
-          border-radius: 8px;
-          padding: 1.5rem;
-          transition: all 0.2s ease;
-
-          &:hover {
-            border-color: #ff6b35;
-            box-shadow: 0 4px 20px rgba(255, 107, 53, 0.1);
-          }
-
+          @include card; padding: 1.5rem; transition: all 0.2s ease;
+          &:hover { border-color: $primary; box-shadow: 0 4px 20px rgba($primary, 0.1); }
+          
           .member-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            padding-bottom: 0.75rem;
-            border-bottom: 1px solid #404040;
-
-            .member-icon {
-              font-size: 1.25rem;
-            }
-
-            .member-kind {
-              background: rgba(255, 107, 53, 0.2);
-              color: #ff6b35;
-              padding: 0.25rem 0.5rem;
-              border-radius: 4px;
-              font-size: 0.75rem;
-              text-transform: uppercase;
-              font-weight: 500;
-            }
-
-            .member-name {
-              color: #fff;
-              font-weight: 600;
-              font-size: 1rem;
-            }
-
-            .member-line {
-              color: #888;
-              font-size: 0.875rem;
-              font-family: 'Courier New', monospace;
-              margin-left: auto;
-            }
-
+            @include flex-center; gap: 1rem; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid $border;
+            .member-icon { font-size: 1.25rem; }
+            .member-kind { background: rgba($primary, 0.2); color: $primary; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase; font-weight: 500; }
+            .member-name { color: $text-light; font-weight: 600; font-size: 1rem; }
+            .member-line { color: $text-muted; font-size: 0.875rem; font-family: 'Courier New', monospace; margin-left: auto; }
             .copy-link-btn {
-              background: transparent;
-              border: 1px solid #666;
-              color: #888;
-              padding: 0.25rem 0.5rem;
-              border-radius: 4px;
-              cursor: pointer;
-              font-size: 0.8rem;
-              transition: all 0.2s ease;
-              margin-left: 0.5rem;
-
-              &:hover {
-                background: #ff6b35;
-                border-color: #ff6b35;
-                color: white;
-                transform: translateY(-1px);
-              }
-
-              &:active {
-                transform: translateY(0);
-              }
+              @include button-base; background: transparent; border: 1px solid $text-dim; color: $text-muted; padding: 0.25rem 0.5rem; font-size: 0.8rem; margin-left: 0.5rem;
+              &:hover { background: $primary; border-color: $primary; color: white; }
             }
           }
 
-          .member-modifiers {
-            margin-bottom: 0.5rem;
-            display: flex;
-            gap: 0.25rem;
-            flex-wrap: wrap;
+          .member-modifiers { margin-bottom: 0.5rem; display: flex; gap: 0.25rem; flex-wrap: wrap; }
+          .member-signature {
+            font-family: 'Courier New', monospace; font-size: 0.9rem; line-height: 1.5; color: #e0e0e0;
+            background: $bg-darker; padding: 1rem; border-radius: 6px; border: 1px solid $border; overflow-x: auto;
+            .keyword { color: $primary; font-weight: 500; }
+            .return-type { color: $secondary; font-weight: 500; }
+            .method-name { color: #81c784; font-weight: 600; }
+            .param-name { color: #ffb74d; }
+            .param-type { color: #ba68c8; font-weight: 500; }
+            .type-link {
+              color: $secondary; background: rgba($secondary, 0.15); text-decoration: none; font-weight: 700;
+              padding: 1px 4px; border-radius: 3px; border: 1px solid rgba($secondary, 0.3); transition: all 0.2s ease;
+              cursor: pointer; user-select: none;
+              &:hover { color: $bg-darker; background: $secondary; border-color: $secondary; transform: translateY(-1px); box-shadow: 0 2px 8px rgba($secondary, 0.4); }
+              &:visited { color: #81c784; background: rgba(129, 199, 132, 0.15); border-color: rgba(129, 199, 132, 0.3);
+                &:hover { color: $bg-darker; background: #81c784; border-color: #81c784; }
+              }
+            }
           }
 
           .member-details {
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid #404040;
-
-            .return-type-section, .referenced-types-section {
-              margin-bottom: 0.75rem;
-
-              &:last-child {
-                margin-bottom: 0;
-              }
-            }
-
+            margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid $border;
+            .return-type-section, .referenced-types-section { margin-bottom: 0.75rem; &:last-child { margin-bottom: 0; } }
             .return-type {
-              color: #888;
-              font-size: 0.875rem;
-
-              code {
-                background: #1a1a1a;
-                color: #4fc3f7;
-                padding: 0.2rem 0.4rem;
-                border-radius: 3px;
-                font-family: monospace;
-                font-size: 0.8rem;
-              }
-
+              color: $text-muted; font-size: 0.875rem;
+              code { background: $bg-darker; color: $secondary; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.8rem; }
               .return-type-link {
-                background: #1a1a1a;
-                color: #4fc3f7;
-                padding: 0.2rem 0.4rem;
-                border-radius: 3px;
-                font-family: monospace;
-                font-size: 0.8rem;
-                text-decoration: none;
-                transition: all 0.2s ease;
-                border: 1px solid transparent;
-
-                &:hover {
-                  background: #4fc3f7;
-                  color: #1a1a1a;
-                  border-color: #4fc3f7;
-                }
-
-                &:visited {
-                  color: #81c784;
-                }
+                background: $bg-darker; color: $secondary; padding: 0.2rem 0.4rem; border-radius: 3px; font-family: monospace; font-size: 0.8rem;
+                text-decoration: none; transition: all 0.2s ease; border: 1px solid transparent;
+                &:hover { background: $secondary; color: $bg-darker; border-color: $secondary; }
+                &:visited { color: #81c784; }
               }
             }
-
             .referenced-types-section {
-              .referenced-types-label {
-                color: #888;
-                font-size: 0.875rem;
-                display: block;
-                margin-bottom: 0.5rem;
-              }
-
-              .referenced-types-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 0.5rem;
-
-                .referenced-type-link {
-                  background: #ff6b35;
-                  color: white;
-                  padding: 0.25rem 0.5rem;
-                  border-radius: 4px;
-                  text-decoration: none;
-                  font-size: 0.8rem;
-                  font-weight: 500;
-                  transition: all 0.2s ease;
-                  border: 1px solid #ff6b35;
-
-                  &:hover {
-                    background: #e55a2b;
-                    transform: translateY(-1px);
-                    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.3);
-                  }
-
-                  &:visited {
-                    background: #81c784;
-                    border-color: #81c784;
-                    color: white;
-
-                    &:hover {
-                      background: #66bb6a;
-                      border-color: #66bb6a;
-                    }
-                  }
-                }
-              }
-            }
-
-            // Override relationships (desktop/general)
-            .override-section {
-              margin-top: 0.75rem;
-              padding-top: 0.5rem;
-              border-top: 1px solid #404040;
-
-              .overrides-info {
-                margin-bottom: 0.5rem;
-              }
-
-              .override-label {
-                font-weight: 500;
-                color: #4fc3f7;
-                margin-right: 0.5rem;
-                font-size: 0.875rem;
-              }
-
-              .override-link {
-                background: #ff9800;
-                color: white;
-                padding: 0.25rem 0.5rem;
-                border-radius: 4px;
-                text-decoration: none;
-                font-size: 0.8rem;
-                font-weight: 500;
-                transition: all 0.2s ease;
-                border: 1px solid #ff9800;
-                margin-right: 0.5rem;
-                margin-bottom: 0.25rem;
-                display: inline-block;
-
-                &:hover {
-                  background: #e68900;
-                  border-color: #e68900;
-                  transform: translateY(-1px);
-                  text-decoration: none;
-                }
-
-                &:active {
-                  transform: translateY(0);
-                }
-              }
-
-              .overridden-by-info {
-                .overridden-by-header {
-                  cursor: pointer;
-                  display: flex;
-                  align-items: center;
-                  justify-content: space-between;
-                  padding: 0.25rem 0;
-                  transition: all 0.2s ease;
-
-                  &:hover {
-                    background: rgba(255, 255, 255, 0.05);
-                    border-radius: 4px;
-                    padding-left: 0.5rem;
-                    padding-right: 0.5rem;
-                  }
-
-                  .toggle-icon {
-                    color: #4fc3f7;
-                    font-size: 0.75rem;
-                    transition: transform 0.2s ease;
-                  }
-                }
-
-                .overridden-by-list {
-                  margin-top: 0.5rem;
-                  padding-left: 1rem;
-                  display: flex;
-                  flex-direction: column;
-                  gap: 0.25rem;
-                  border-left: 2px solid rgba(79, 195, 247, 0.3);
-                  padding-left: 0.75rem;
-                  margin-left: 0.5rem;
-                }
+              .referenced-types-label { color: $text-muted; font-size: 0.875rem; display: block; margin-bottom: 0.5rem; }
+              .referenced-types-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+              .referenced-type-link {
+                @include link-style($primary, #e55a2b); border: 1px solid $primary;
+                &:visited { background: #81c784; border-color: #81c784; &:hover { background: #66bb6a; border-color: #66bb6a; } }
               }
             }
           }
 
-          .member-signature {
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #e0e0e0;
-            background: #1a1a1a;
-            padding: 1rem;
-            border-radius: 6px;
-            border: 1px solid #404040;
-            overflow-x: auto;
-
-            .keyword {
-              color: #ff6b35;
-              font-weight: 500;
-            }
-
-            .return-type {
-              color: #4fc3f7;
-              font-weight: 500;
-            }
-
-            .method-name {
-              color: #81c784;
-              font-weight: 600;
-            }
-
-            .param-name {
-              color: #ffb74d;
-            }
-
-            .param-type {
-              color: #ba68c8;
-              font-weight: 500;
-            }
-
-            .type-link {
-              color: #4fc3f7;
-              background: rgba(79, 195, 247, 0.15);
-              text-decoration: none;
-              font-weight: 700;
-              padding: 1px 4px;
-              border-radius: 3px;
-              border: 1px solid rgba(79, 195, 247, 0.3);
-              transition: all 0.2s ease;
-              text-shadow: 0 0 4px rgba(79, 195, 247, 0.5);
-              cursor: pointer;
-              user-select: none;
-
-              &:hover {
-                color: #1a1a1a;
-                background: #4fc3f7;
-                border-color: #4fc3f7;
-                text-shadow: none;
-                transform: translateY(-1px);
-                box-shadow: 0 2px 8px rgba(79, 195, 247, 0.4);
+          // Override section
+          .override-section {
+            margin-top: 0.75rem; padding-top: 0.5rem; border-top: 1px solid $border;
+            .overrides-info { margin-bottom: 0.5rem; }
+            .override-label { font-weight: 500; color: $secondary; margin-right: 0.5rem; font-size: 0.875rem; }
+            .override-link { @include link-style(#ff9800, #e68900); border: 1px solid #ff9800; margin-right: 0.5rem; margin-bottom: 0.25rem; display: inline-block; }
+            .overridden-by-info {
+              .overridden-by-header {
+                @include flex-between; cursor: pointer; padding: 0.25rem 0; transition: all 0.2s ease;
+                &:hover { background: rgba(255, 255, 255, 0.05); border-radius: 4px; padding: 0 0.5rem; }
+                .toggle-icon { color: $secondary; font-size: 0.75rem; }
               }
-
-              &:visited {
-                color: #81c784;
-                background: rgba(129, 199, 132, 0.15);
-                border-color: rgba(129, 199, 132, 0.3);
-                text-shadow: 0 0 4px rgba(129, 199, 132, 0.5);
-
-                &:hover {
-                  color: #1a1a1a;
-                  background: #81c784;
-                  border-color: #81c784;
-                }
+              .overridden-by-list {
+                margin-top: 0.5rem; padding-left: 1.75rem; display: flex; flex-direction: column; gap: 0.25rem;
+                border-left: 2px solid rgba($secondary, 0.3);
               }
             }
           }
@@ -677,161 +204,25 @@
     }
 
     .no-members, .no-filtered-members {
-      text-align: center;
-      padding: 3rem;
-      background: #2d2d2d;
-      border: 1px solid #404040;
-      border-radius: 8px;
-
-      p {
-        color: #888;
-        font-size: 1.1rem;
-        margin: 0 0 1rem 0;
-      }
-      
-      .clear-filters-btn {
-        background: #ff6b35;
-        color: white;
-        border: none;
-        padding: 0.75rem 1.5rem;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 0.875rem;
-        font-weight: 500;
-        transition: all 0.2s ease;
-        
-        &:hover {
-          background: #e55a2b;
-          transform: translateY(-1px);
-        }
-      }
+      text-align: center; padding: 3rem; @include card;
+      .clear-filters-btn { @include button-base; background: $primary; color: white; padding: 0.75rem 1.5rem; font-size: 0.875rem; font-weight: 500; }
     }
-    
-    .no-members p {
-      margin: 0;
-    }
+    .no-members p { margin: 0; }
   }
 }
 
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
 // Responsive design
 @media (max-width: 768px) {
   .type-view {
-    .type-header {
-      .type-info {
-        flex-direction: column;
-        text-align: center;
-        gap: 1rem;
-
-        .type-details {
-          .type-meta {
-            flex-direction: column;
-            gap: 0.5rem;
-            align-items: center;
-          }
-        }
-      }
+    .type-header .type-info {
+      flex-direction: column; text-align: center; gap: 1rem;
+      .type-details .type-meta { flex-direction: column; gap: 0.5rem; align-items: center; }
     }
-
-    .type-content {
-      .members-section {
-        .members-list {
-          .member-item {
-            .member-header {
-              flex-direction: column;
-              align-items: flex-start;
-              gap: 0.5rem;
-            }
-
-            .member-signature {
-              font-size: 0.8rem;
-              padding: 0.75rem;
-            }
-          }
-
-          .override-section {
-            margin-top: 0.75rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-
-            .overrides-info {
-              margin-bottom: 0.5rem;
-            }
-
-            .override-label {
-              font-weight: 500;
-              color: #4fc3f7;
-              margin-right: 0.5rem;
-              font-size: 0.875rem;
-            }
-
-            .override-link {
-              background: #ff9800;
-              color: white;
-              padding: 0.25rem 0.5rem;
-              border-radius: 4px;
-              text-decoration: none;
-              font-size: 0.8rem;
-              font-weight: 500;
-              transition: all 0.2s ease;
-              border: 1px solid #ff9800;
-              margin-right: 0.5rem;
-              margin-bottom: 0.25rem;
-              display: inline-block;
-
-              &:hover {
-                background: #e68900;
-                border-color: #e68900;
-                transform: translateY(-1px);
-                text-decoration: none;
-              }
-
-              &:active {
-                transform: translateY(0);
-              }
-            }
-
-            .overridden-by-info {
-              .overridden-by-header {
-                cursor: pointer;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 0.25rem 0;
-                transition: all 0.2s ease;
-
-                &:hover {
-                  background: rgba(255, 255, 255, 0.05);
-                  border-radius: 4px;
-                  padding-left: 0.5rem;
-                  padding-right: 0.5rem;
-                }
-
-                .toggle-icon {
-                  color: #4fc3f7;
-                  font-size: 0.75rem;
-                  transition: transform 0.2s ease;
-                }
-              }
-
-              .overridden-by-list {
-                margin-top: 0.5rem;
-                padding-left: 1rem;
-                display: flex;
-                flex-direction: column;
-                gap: 0.25rem;
-                border-left: 2px solid rgba(79, 195, 247, 0.3);
-                padding-left: 0.75rem;
-                margin-left: 0.5rem;
-              }
-            }
-          }
-        }
-      }
+    .type-content .members-section .members-list .member-item {
+      .member-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+      .member-signature { font-size: 0.8rem; padding: 0.75rem; }
     }
   }
 }
