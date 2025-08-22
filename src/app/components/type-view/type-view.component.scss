@@ -289,6 +289,29 @@
               font-family: 'Courier New', monospace;
               margin-left: auto;
             }
+
+            .copy-link-btn {
+              background: transparent;
+              border: 1px solid #666;
+              color: #888;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              cursor: pointer;
+              font-size: 0.8rem;
+              transition: all 0.2s ease;
+              margin-left: 0.5rem;
+
+              &:hover {
+                background: #ff6b35;
+                border-color: #ff6b35;
+                color: white;
+                transform: translateY(-1px);
+              }
+
+              &:active {
+                transform: translateY(0);
+              }
+            }
           }
 
           .member-modifiers {

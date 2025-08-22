@@ -1,8 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, inject, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { RouterLink, ActivatedRoute, Router, NavigationEnd } from '@angular/router';
 import { DocsService } from '../../services/docs.service';
-import { Type } from '../../models/docs.models';
+import { Type, Member } from '../../models/docs.models';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-type-view',
@@ -11,7 +12,7 @@ import { Type } from '../../models/docs.models';
   templateUrl: './type-view.component.html',
   styleUrls: ['./type-view.component.scss']
 })
-export class TypeViewComponent implements OnInit {
+export class TypeViewComponent implements OnInit, AfterViewInit {
   type = signal<Type | null>(null);
   namespace = signal<string>('');
   category = signal<string>('');
@@ -36,6 +37,18 @@ export class TypeViewComponent implements OnInit {
         this.loadType(typeName);
       }
     });
+
+    // Listen for navigation to handle smart scrolling
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.handleNavigationScroll(event.url);
+    });
+  }
+
+  ngAfterViewInit() {
+    // Handle initial load with fragment
+    this.handleInitialFragment();
   }
 
   private loadType(typeName: string) {
@@ -129,5 +142,60 @@ export class TypeViewComponent implements OnInit {
 
   isOverriddenByExpanded(memberName: string): boolean {
     return this.expandedOverriddenBy.has(memberName);
+  }
+
+  // Anchor navigation methods
+  getMemberAnchorId(member: Member): string {
+    const typeName = this.type()?.name || '';
+    return `${typeName}-${member.kind}-${member.name}`.replace(/[^a-zA-Z0-9-]/g, '-');
+  }
+
+  getMemberAnchorIdFromKey(memberKey: string): string {
+    const parsed = this.parseMemberKey(memberKey);
+    // We need to determine the member kind - let's get it from the service
+    const memberInfo = this.docsService.getMemberFromKey(memberKey);
+    if (memberInfo) {
+      return `${parsed.typeName}-${memberInfo.kind}-${parsed.memberName}`.replace(/[^a-zA-Z0-9-]/g, '-');
+    }
+    // Fallback - assume it's a method
+    return `${parsed.typeName}-method-${parsed.memberName}`.replace(/[^a-zA-Z0-9-]/g, '-');
+  }
+
+  copyMemberLink(member: Member): void {
+    const url = window.location.origin + window.location.pathname + '#' + this.getMemberAnchorId(member);
+    navigator.clipboard.writeText(url).then(() => {
+      // You could add a toast notification here
+      console.log('Link copied to clipboard:', url);
+    }).catch(err => {
+      console.error('Failed to copy link:', err);
+    });
+  }
+
+  private handleNavigationScroll(url: string): void {
+    setTimeout(() => {
+      const fragment = url.split('#')[1];
+      if (fragment) {
+        // Navigate to specific anchor - don't scroll to top
+        const element = document.getElementById(fragment);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      } else {
+        // No fragment - scroll to top for new page navigation
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }, 100); // Small delay to ensure DOM is updated
+  }
+
+  private handleInitialFragment(): void {
+    const fragment = this.route.snapshot.fragment;
+    if (fragment) {
+      setTimeout(() => {
+        const element = document.getElementById(fragment);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 300); // Longer delay for initial load
+    }
   }
 }

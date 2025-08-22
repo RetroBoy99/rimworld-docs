@@ -15,11 +15,14 @@ export class App {
   protected searchQuery = signal('');
 
   constructor(private router: Router) {
-    // Scroll to top on route changes
+    // Scroll to top on route changes (except for fragment navigation)
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    ).subscribe((event: NavigationEnd) => {
+      // Only scroll to top if there's no fragment (anchor)
+      if (!event.url.includes('#')) {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
     });
   }
 

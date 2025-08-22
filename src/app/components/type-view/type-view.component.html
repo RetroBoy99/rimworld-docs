@@ -54,12 +54,20 @@
       <div *ngIf="type()!.members.length > 0" class="members-section">
         <h2>Members</h2>
         <div class="members-list">
-          <div *ngFor="let member of type()!.members; trackBy: trackBySignature" class="member-item">
+          <div *ngFor="let member of type()!.members; trackBy: trackBySignature" class="member-item" [id]="getMemberAnchorId(member)">
             <div class="member-header">
               <span class="member-icon">{{ getMemberIcon(member) }}</span>
               <span class="member-kind">{{ member.kind }}</span>
               <span class="member-name">{{ member.name }}</span>
               <span class="member-line">Line {{ member.line }}</span>
+              <button 
+                class="copy-link-btn" 
+                (click)="copyMemberLink(member)"
+                [title]="'Copy link to ' + member.name"
+                type="button"
+              >
+                📋
+              </button>
             </div>
             
             <div class="member-modifiers" *ngIf="member.modifiers && member.modifiers.length > 0">
@@ -92,6 +100,7 @@
                   <span class="override-label">🔄 Overrides:</span>
                   <a 
                     [routerLink]="['/docs/type', parseMemberKey(overrideInfo.overrides).typeName]"
+                    [fragment]="getMemberAnchorIdFromKey(overrideInfo.overrides)"
                     class="override-link"
                     [title]="'Go to base method in ' + parseMemberKey(overrideInfo.overrides).typeName"
                   >
@@ -110,6 +119,7 @@
                     <a 
                       *ngFor="let overriddenBy of overrideInfo.overriddenBy"
                       [routerLink]="['/docs/type', parseMemberKey(overriddenBy).typeName]"
+                      [fragment]="getMemberAnchorIdFromKey(overriddenBy)"
                       class="override-link"
                       [title]="'Go to overridden method in ' + parseMemberKey(overriddenBy).typeName"
                     >

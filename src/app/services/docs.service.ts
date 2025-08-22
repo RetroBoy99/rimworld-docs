@@ -372,6 +372,18 @@ export class DocsService {
     };
   }
 
+  // Get member info from a member key
+  getMemberFromKey(memberKey: string): Member | null {
+    const parsed = this.parseMemberKey(memberKey);
+    const categorized = this.categorizedData();
+    if (!categorized || !parsed.typeName) return null;
+
+    const members = categorized.memberIndex.get(parsed.typeName);
+    if (!members) return null;
+
+    return members.find(m => m.name === parsed.memberName) || null;
+  }
+
   getNamespaces(): Namespace[] {
     const data = this.docsData();
     if (!data) return [];
