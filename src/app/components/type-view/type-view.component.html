@@ -46,15 +46,54 @@
               {{ baseType }}
             </a>
           </div>
+          
+          <div class="derived-types" *ngIf="getDerivedTypes().length > 0">
+            <div class="derived-types-header" (click)="toggleDerivedTypes()">
+              <span class="label">🔽 Inherited by {{ getDerivedTypes().length }} type{{ getDerivedTypes().length !== 1 ? 's' : '' }}</span>
+              <span class="toggle-icon">{{ isDerivedTypesExpanded() ? '▼' : '▶' }}</span>
+            </div>
+            
+            <div *ngIf="isDerivedTypesExpanded()" class="derived-types-list">
+              <a 
+                *ngFor="let derivedType of getDerivedTypes()"
+                [routerLink]="typeExists(derivedType) ? ['/docs/type', derivedType] : null"
+                [class]="typeExists(derivedType) ? 'derived-type-link' : 'derived-type-tag'"
+                [title]="typeExists(derivedType) ? 'Go to ' + derivedType : derivedType + ' (external type)'"
+              >
+                {{ derivedType }}
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <div class="type-content">
       <div *ngIf="type()!.members.length > 0" class="members-section">
-        <h2>Members</h2>
+        <div class="members-header">
+          <h2>Members ({{ getFilteredMemberCount() }} of {{ type()!.members.length }})</h2>
+          
+          <!-- Member filters -->
+          <div class="member-filters">
+            <span class="filter-label">Filter by:</span>
+            <div class="filter-buttons">
+              <button 
+                *ngFor="let kind of getAllMemberKinds()"
+                class="filter-btn"
+                [class.active]="isMemberFilterActive(kind)"
+                (click)="toggleMemberFilter(kind)"
+                [title]="'Toggle ' + kind + ' members'"
+              >
+                <span class="filter-icon">{{ getMemberIcon({kind: kind}) }}</span>
+                {{ kind }}
+                <span class="filter-count">({{ getMemberKindCounts()[kind] || 0 }})</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
         <div class="members-list">
-          <div *ngFor="let member of type()!.members; trackBy: trackBySignature" class="member-item" [id]="getMemberAnchorId(member)">
+          <div *ngFor="let member of getFilteredMembers(); trackBy: trackBySignature" class="member-item" [id]="getMemberAnchorId(member)">
             <div class="member-header">
               <span class="member-icon">{{ getMemberIcon(member) }}</span>
               <span class="member-kind">{{ member.kind }}</span>
@@ -149,6 +188,13 @@
       
       <div *ngIf="type()!.members.length === 0" class="no-members">
         <p>This {{ type()!.kind }} has no members.</p>
+      </div>
+      
+      <div *ngIf="type()!.members.length > 0 && getFilteredMembers().length === 0" class="no-filtered-members">
+        <p>No members match the current filters.</p>
+        <button class="clear-filters-btn" (click)="memberFilters.set({method: true, property: true, field: true, constructor: true})">
+          Clear Filters
+        </button>
       </div>
     </div>
   </div>

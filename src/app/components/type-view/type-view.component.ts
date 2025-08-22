@@ -19,8 +19,19 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
   loading = signal(false);
   error = signal<string | null>(null);
   
-  // State for collapsible override sections
-  private expandedOverriddenBy = new Set<string>();
+     // State for collapsible override sections
+   private expandedOverriddenBy = new Set<string>();
+   
+   // State for collapsible inheritance sections
+   private expandedDerivedTypes = new Set<string>();
+   
+   // Filter state for members
+   memberFilters = signal({
+     method: true,
+     property: true,
+     field: true,
+     constructor: true
+   });
 
   constructor(
     private docsService: DocsService,
@@ -187,15 +198,91 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
     }, 100); // Small delay to ensure DOM is updated
   }
 
-  private handleInitialFragment(): void {
-    const fragment = this.route.snapshot.fragment;
-    if (fragment) {
-      setTimeout(() => {
-        const element = document.getElementById(fragment);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 300); // Longer delay for initial load
+     private handleInitialFragment(): void {
+     const fragment = this.route.snapshot.fragment;
+     if (fragment) {
+       setTimeout(() => {
+         const element = document.getElementById(fragment);
+         if (element) {
+           element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+         }
+       }, 300); // Longer delay for initial load
+     }
+   }
+
+   // Inheritance helper methods
+   getInheritance(): string[] {
+     const typeName = this.type()?.name;
+     if (!typeName) return [];
+     return this.docsService.getInheritance(typeName);
+   }
+
+   getDerivedTypes(): string[] {
+     const typeName = this.type()?.name;
+     if (!typeName) return [];
+     return this.docsService.getDerivedTypes(typeName);
+   }
+
+   toggleDerivedTypes(): void {
+     const typeName = this.type()?.name;
+     if (!typeName) return;
+     
+     if (this.expandedDerivedTypes.has(typeName)) {
+       this.expandedDerivedTypes.delete(typeName);
+     } else {
+       this.expandedDerivedTypes.add(typeName);
+     }
+   }
+
+   isDerivedTypesExpanded(): boolean {
+     const typeName = this.type()?.name;
+     if (!typeName) return false;
+     return this.expandedDerivedTypes.has(typeName);
+   }
+
+   // Member filtering methods
+   getFilteredMembers(): Member[] {
+     const type = this.type();
+     if (!type) return [];
+     
+     const filters = this.memberFilters();
+     return type.members.filter(member => filters[member.kind as keyof typeof filters]);
+   }
+
+     toggleMemberFilter(kind: string): void {
+    const currentFilters = this.memberFilters();
+    if (kind in currentFilters) {
+      this.memberFilters.set({
+        ...currentFilters,
+        [kind]: !currentFilters[kind as keyof typeof currentFilters]
+      });
     }
   }
-}
+
+   getMemberKindCounts(): {[key: string]: number} {
+     const type = this.type();
+     if (!type) return {};
+     
+     return type.members.reduce((counts, member) => {
+       counts[member.kind] = (counts[member.kind] || 0) + 1;
+       return counts;
+     }, {} as {[key: string]: number});
+   }
+
+   getFilteredMemberCount(): number {
+     return this.getFilteredMembers().length;
+   }
+
+     getAllMemberKinds(): string[] {
+    const type = this.type();
+    if (!type) return [];
+    
+    const kinds = new Set(type.members.map(m => m.kind));
+    return Array.from(kinds).sort();
+  }
+
+  isMemberFilterActive(kind: string): boolean {
+    const filters = this.memberFilters();
+    return kind in filters && filters[kind as keyof typeof filters];
+  }
+ }

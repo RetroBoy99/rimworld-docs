@@ -24,6 +24,53 @@
           <span class="showing-count">Showing {{ types().length }}</span>
         </div>
       </div>
+      
+      <!-- Filters Section -->
+      <div class="filters-section">
+        <div class="search-filter">
+          <input 
+            type="text" 
+            placeholder="Search types..." 
+            [value]="searchQuery()"
+            (input)="updateSearchQuery($event.target.value || '')"
+            class="search-input"
+          />
+        </div>
+        
+        <div class="access-modifier-filter">
+          <label class="filter-label">Access:</label>
+          <select 
+            [value]="accessModifierFilter()"
+            (change)="updateAccessModifierFilter($event)"
+            class="filter-select"
+          >
+            <option value="all">All</option>
+            <option *ngFor="let modifier of getAvailableAccessModifiers()" [value]="modifier">
+              {{ modifier }}
+            </option>
+          </select>
+        </div>
+        
+        <div class="modifier-filters" *ngIf="getAvailableModifiers().length > 0">
+          <span class="filter-label">Modifiers:</span>
+          <div class="modifier-buttons">
+            <button 
+              *ngFor="let modifier of getAvailableModifiers()"
+              class="modifier-btn"
+              [class.active]="modifierFilters()[modifier]"
+              (click)="toggleModifierFilter(modifier)"
+              [title]="'Toggle ' + modifier + ' types'"
+            >
+              {{ modifier }}
+              <span class="modifier-count">({{ getModifierCount(modifier) }})</span>
+            </button>
+          </div>
+        </div>
+        
+        <button class="clear-filters-btn" (click)="clearAllFilters()">
+          Clear Filters
+        </button>
+      </div>
     </div>
 
     <div class="category-navigation">

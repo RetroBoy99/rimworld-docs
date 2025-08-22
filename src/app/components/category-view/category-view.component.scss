@@ -80,6 +80,129 @@
     align-items: center;
   }
 
+  .filters-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #2d2d2d;
+    border: 1px solid #404040;
+    border-radius: 8px;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+
+    .search-filter {
+      flex: 1;
+      min-width: 200px;
+
+      .search-input {
+        width: 100%;
+        padding: 0.5rem;
+        background: #1a1a1a;
+        border: 1px solid #404040;
+        border-radius: 4px;
+        color: white;
+        font-size: 0.875rem;
+
+        &:focus {
+          outline: none;
+          border-color: #ff6b35;
+        }
+
+        &::placeholder {
+          color: #888;
+        }
+      }
+    }
+
+    .access-modifier-filter {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+
+      .filter-select {
+        padding: 0.5rem;
+        background: #1a1a1a;
+        border: 1px solid #404040;
+        border-radius: 4px;
+        color: white;
+        font-size: 0.875rem;
+
+        &:focus {
+          outline: none;
+          border-color: #ff6b35;
+        }
+      }
+    }
+
+    .modifier-filters {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+
+      .modifier-buttons {
+        display: flex;
+        gap: 0.25rem;
+        flex-wrap: wrap;
+      }
+
+      .modifier-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        background: #1a1a1a;
+        border: 1px solid #404040;
+        color: #888;
+        padding: 0.25rem 0.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.8rem;
+
+        .modifier-count {
+          color: #666;
+        }
+
+        &:hover {
+          border-color: #ff6b35;
+          color: #ccc;
+        }
+
+        &.active {
+          background: #ff6b35;
+          border-color: #ff6b35;
+          color: white;
+
+          .modifier-count {
+            color: rgba(255, 255, 255, 0.8);
+          }
+        }
+      }
+    }
+
+    .filter-label {
+      color: #888;
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+
+    .clear-filters-btn {
+      background: #666;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #777;
+      }
+    }
+  }
+
   h1 {
     font-size: 2rem;
     color: #007acc;

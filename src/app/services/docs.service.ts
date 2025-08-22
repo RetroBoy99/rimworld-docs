@@ -124,11 +124,12 @@ export class DocsService {
         interfaces: new Map<string, Type>(),
         structs: new Map<string, Type>()
       },
-      typeIndex: new Map<string, Type>(),
-      memberIndex: new Map<string, Member[]>(),
-      inheritance: new Map<string, string[]>(),
-      references: new Map<string, Set<string>>(),
-      overrides: new Map<string, OverrideInfo>()
+             typeIndex: new Map<string, Type>(),
+       memberIndex: new Map<string, Member[]>(),
+       inheritance: new Map<string, string[]>(),
+       derivedTypes: new Map<string, string[]>(),
+       references: new Map<string, Set<string>>(),
+       overrides: new Map<string, OverrideInfo>()
     };
 
     // Categorize types and build indexes
@@ -164,10 +165,13 @@ export class DocsService {
       this.buildCrossReferences(type, categorized.references);
     }
 
-    // Build override relationships after all types are indexed
-    this.buildOverrideRelationships(categorized);
+         // Build inheritance relationships after all types are indexed
+     this.buildInheritanceRelationships(categorized);
 
-    return categorized;
+     // Build override relationships after all types are indexed
+     this.buildOverrideRelationships(categorized);
+
+     return categorized;
   }
 
   private buildCrossReferences(type: Type, references: Map<string, Set<string>>) {
@@ -182,9 +186,25 @@ export class DocsService {
         references.get(typeName)!.add(type.name);
       }
     }
-  }
+     }
 
-  private buildOverrideRelationships(categorized: CategorizedDocs) {
+   private buildInheritanceRelationships(categorized: CategorizedDocs) {
+     // Build bidirectional inheritance relationships
+     for (const type of categorized.typeIndex.values()) {
+       if (type.base_types && type.base_types.length > 0) {
+         // For each base type, record that this type derives from it
+         for (const baseTypeName of type.base_types) {
+           // Record the inheritance relationship
+           if (!categorized.derivedTypes.has(baseTypeName)) {
+             categorized.derivedTypes.set(baseTypeName, []);
+           }
+           categorized.derivedTypes.get(baseTypeName)!.push(type.name);
+         }
+       }
+     }
+   }
+ 
+   private buildOverrideRelationships(categorized: CategorizedDocs) {
     // First pass: identify override methods and what they override
     for (const type of categorized.typeIndex.values()) {
       if (!type.base_types || type.base_types.length === 0) continue;
@@ -347,13 +367,21 @@ export class DocsService {
     return `/docs/category/${category}`;
   }
 
-  getInheritance(typeName: string): string[] {
-    const data = this.categorizedData();
-    if (!data) return [];
-    
-    const inheritance = data.inheritance.get(typeName);
-    return inheritance ? inheritance : [];
-  }
+     getInheritance(typeName: string): string[] {
+     const data = this.categorizedData();
+     if (!data) return [];
+     
+     const inheritance = data.inheritance.get(typeName);
+     return inheritance ? inheritance : [];
+   }
+
+   getDerivedTypes(typeName: string): string[] {
+     const data = this.categorizedData();
+     if (!data) return [];
+     
+     const derivedTypes = data.derivedTypes.get(typeName);
+     return derivedTypes ? derivedTypes : [];
+   }
 
   getOverrideInfo(typeName: string, memberName: string): OverrideInfo | null {
     const data = this.categorizedData();

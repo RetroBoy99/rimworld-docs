@@ -34,6 +34,7 @@ export interface CategorizedDocs {
   typeIndex: Map<string, Type>; // name -> Type
   memberIndex: Map<string, Member[]>; // typeName -> Members[]
   inheritance: Map<string, string[]>; // typeName -> base types (if available)
+  derivedTypes: Map<string, string[]>; // typeName -> types that inherit from it
   references: Map<string, Set<string>>; // typeName -> types that reference it
   overrides: Map<string, OverrideInfo>; // "TypeName.MethodName" -> override info
 }

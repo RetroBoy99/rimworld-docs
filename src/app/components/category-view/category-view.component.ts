@@ -22,6 +22,12 @@ export class CategoryViewComponent implements OnInit {
   totalPages = signal(0);
   totalTypes = signal(0);
   loadingMore = signal(false);
+  
+  // Filtering
+  allTypes = signal<Type[]>([]);
+  accessModifierFilter = signal<string>('all'); // 'all', 'public', 'private', 'protected', 'internal'
+  modifierFilters = signal<{[key: string]: boolean}>({});
+  searchQuery = signal<string>('');
 
   constructor(
     private docsService: DocsService,
@@ -41,9 +47,15 @@ export class CategoryViewComponent implements OnInit {
   private loadCategory(category: 'class' | 'enum' | 'interface' | 'struct') {
     this.docsService.loadDocs().subscribe({
       next: () => {
-        this.loadTypes(0);
-        this.totalTypes.set(this.docsService.getCategoryCount(category));
-        this.totalPages.set(this.docsService.getCategoryPageCount(category));
+        // Load all types for filtering
+        const allCategoryTypes = this.docsService.getTypesByCategory(category);
+        this.allTypes.set(allCategoryTypes);
+        
+        // Initialize modifier filters based on available modifiers
+        this.initializeModifierFilters(allCategoryTypes);
+        
+        // Apply filters and load initial page
+        this.applyFiltersAndUpdateDisplay();
         this.loading.set(false);
       },
       error: (err) => {
@@ -106,5 +118,108 @@ export class CategoryViewComponent implements OnInit {
 
   trackByType(index: number, type: Type): string {
     return type.name;
+  }
+
+  // Filtering methods
+  private initializeModifierFilters(types: Type[]): void {
+    const allModifiers = new Set<string>();
+    types.forEach(type => {
+      type.modifiers.forEach(modifier => allModifiers.add(modifier));
+    });
+    
+    const modifierFilters: {[key: string]: boolean} = {};
+    allModifiers.forEach(modifier => {
+      modifierFilters[modifier] = true;
+    });
+    
+    this.modifierFilters.set(modifierFilters);
+  }
+
+  private applyFiltersAndUpdateDisplay(): void {
+    const filteredTypes = this.getFilteredTypes();
+    this.types.set(filteredTypes.slice(0, 50)); // Show first 50
+    this.totalTypes.set(filteredTypes.length);
+    this.currentPage.set(0);
+  }
+
+  private getFilteredTypes(): Type[] {
+    let filtered = this.allTypes();
+    
+    // Apply search query filter
+    const query = this.searchQuery().toLowerCase().trim();
+    if (query) {
+      filtered = filtered.filter(type => 
+        type.name.toLowerCase().includes(query) ||
+        type.file.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply access modifier filter
+    const accessFilter = this.accessModifierFilter();
+    if (accessFilter !== 'all') {
+      filtered = filtered.filter(type => type.access_modifier === accessFilter);
+    }
+    
+    // Apply modifier filters
+    const modifierFilters = this.modifierFilters();
+    const activeModifiers = Object.keys(modifierFilters).filter(mod => modifierFilters[mod]);
+    if (activeModifiers.length > 0 && activeModifiers.length < Object.keys(modifierFilters).length) {
+      filtered = filtered.filter(type => 
+        type.modifiers.some(modifier => activeModifiers.includes(modifier))
+      );
+    }
+    
+    return filtered;
+  }
+
+  // Filter controls
+  updateSearchQuery(query: string): void {
+    this.searchQuery.set(query);
+    this.applyFiltersAndUpdateDisplay();
+  }
+
+  updateAccessModifierFilter(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.accessModifierFilter.set(target?.value || 'all');
+    this.applyFiltersAndUpdateDisplay();
+  }
+
+  toggleModifierFilter(modifier: string): void {
+    const current = this.modifierFilters();
+    this.modifierFilters.set({
+      ...current,
+      [modifier]: !current[modifier]
+    });
+    this.applyFiltersAndUpdateDisplay();
+  }
+
+  clearAllFilters(): void {
+    this.searchQuery.set('');
+    this.accessModifierFilter.set('all');
+    const modifierFilters = this.modifierFilters();
+    const resetFilters: {[key: string]: boolean} = {};
+    Object.keys(modifierFilters).forEach(key => {
+      resetFilters[key] = true;
+    });
+    this.modifierFilters.set(resetFilters);
+    this.applyFiltersAndUpdateDisplay();
+  }
+
+  getAvailableAccessModifiers(): string[] {
+    const modifiers = new Set<string>();
+    this.allTypes().forEach(type => {
+      if (type.access_modifier) {
+        modifiers.add(type.access_modifier);
+      }
+    });
+    return Array.from(modifiers).sort();
+  }
+
+  getAvailableModifiers(): string[] {
+    return Object.keys(this.modifierFilters());
+  }
+
+  getModifierCount(modifier: string): number {
+    return this.allTypes().filter(type => type.modifiers.includes(modifier)).length;
   }
 }
