@@ -390,6 +390,85 @@
                 }
               }
             }
+
+            // Override relationships (desktop/general)
+            .override-section {
+              margin-top: 0.75rem;
+              padding-top: 0.5rem;
+              border-top: 1px solid #404040;
+
+              .overrides-info {
+                margin-bottom: 0.5rem;
+              }
+
+              .override-label {
+                font-weight: 500;
+                color: #4fc3f7;
+                margin-right: 0.5rem;
+                font-size: 0.875rem;
+              }
+
+              .override-link {
+                background: #ff9800;
+                color: white;
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                text-decoration: none;
+                font-size: 0.8rem;
+                font-weight: 500;
+                transition: all 0.2s ease;
+                border: 1px solid #ff9800;
+                margin-right: 0.5rem;
+                margin-bottom: 0.25rem;
+                display: inline-block;
+
+                &:hover {
+                  background: #e68900;
+                  border-color: #e68900;
+                  transform: translateY(-1px);
+                  text-decoration: none;
+                }
+
+                &:active {
+                  transform: translateY(0);
+                }
+              }
+
+              .overridden-by-info {
+                .overridden-by-header {
+                  cursor: pointer;
+                  display: flex;
+                  align-items: center;
+                  justify-content: space-between;
+                  padding: 0.25rem 0;
+                  transition: all 0.2s ease;
+
+                  &:hover {
+                    background: rgba(255, 255, 255, 0.05);
+                    border-radius: 4px;
+                    padding-left: 0.5rem;
+                    padding-right: 0.5rem;
+                  }
+
+                  .toggle-icon {
+                    color: #4fc3f7;
+                    font-size: 0.75rem;
+                    transition: transform 0.2s ease;
+                  }
+                }
+
+                .overridden-by-list {
+                  margin-top: 0.5rem;
+                  padding-left: 1rem;
+                  display: flex;
+                  flex-direction: column;
+                  gap: 0.25rem;
+                  border-left: 2px solid rgba(79, 195, 247, 0.3);
+                  padding-left: 0.75rem;
+                  margin-left: 0.5rem;
+                }
+              }
+            }
           }
 
           .member-signature {
@@ -520,6 +599,84 @@
             .member-signature {
               font-size: 0.8rem;
               padding: 0.75rem;
+            }
+          }
+
+          .override-section {
+            margin-top: 0.75rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+            .overrides-info {
+              margin-bottom: 0.5rem;
+            }
+
+            .override-label {
+              font-weight: 500;
+              color: #4fc3f7;
+              margin-right: 0.5rem;
+              font-size: 0.875rem;
+            }
+
+            .override-link {
+              background: #ff9800;
+              color: white;
+              padding: 0.25rem 0.5rem;
+              border-radius: 4px;
+              text-decoration: none;
+              font-size: 0.8rem;
+              font-weight: 500;
+              transition: all 0.2s ease;
+              border: 1px solid #ff9800;
+              margin-right: 0.5rem;
+              margin-bottom: 0.25rem;
+              display: inline-block;
+
+              &:hover {
+                background: #e68900;
+                border-color: #e68900;
+                transform: translateY(-1px);
+                text-decoration: none;
+              }
+
+              &:active {
+                transform: translateY(0);
+              }
+            }
+
+            .overridden-by-info {
+              .overridden-by-header {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.25rem 0;
+                transition: all 0.2s ease;
+
+                &:hover {
+                  background: rgba(255, 255, 255, 0.05);
+                  border-radius: 4px;
+                  padding-left: 0.5rem;
+                  padding-right: 0.5rem;
+                }
+
+                .toggle-icon {
+                  color: #4fc3f7;
+                  font-size: 0.75rem;
+                  transition: transform 0.2s ease;
+                }
+              }
+
+              .overridden-by-list {
+                margin-top: 0.5rem;
+                padding-left: 1rem;
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+                border-left: 2px solid rgba(79, 195, 247, 0.3);
+                padding-left: 0.75rem;
+                margin-left: 0.5rem;
+              }
             }
           }
         }

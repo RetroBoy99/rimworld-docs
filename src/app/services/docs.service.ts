@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, shareReplay, BehaviorSubject, of, forkJoin } from 'rxjs';
-import { DocsIndex, Namespace, Type, SearchResult, CategorizedDocs, Member } from '../models/docs.models';
+import { DocsIndex, Namespace, Type, SearchResult, CategorizedDocs, Member, OverrideInfo } from '../models/docs.models';
 
 @Injectable({
   providedIn: 'root'
@@ -87,7 +87,7 @@ export class DocsService {
     this.loading.set(true);
     this.error.set(null);
 
-    return this.http.get<DocsIndex>('assets/docs_index.json').pipe(
+    return this.http.get<DocsIndex>('assets/docs_index.gz').pipe(
       map(data => {
         // Store the data and prepare for lazy loading
         this.docsData.set(data);
@@ -127,7 +127,8 @@ export class DocsService {
       typeIndex: new Map<string, Type>(),
       memberIndex: new Map<string, Member[]>(),
       inheritance: new Map<string, string[]>(),
-      references: new Map<string, Set<string>>()
+      references: new Map<string, Set<string>>(),
+      overrides: new Map<string, OverrideInfo>()
     };
 
     // Categorize types and build indexes
@@ -154,9 +155,17 @@ export class DocsService {
       // Index members by type
       categorized.memberIndex.set(type.name, type.members);
 
+      // Store inheritance information
+      if (type.base_types && type.base_types.length > 0) {
+        categorized.inheritance.set(type.name, type.base_types);
+      }
+
       // Build cross-references from member signatures
       this.buildCrossReferences(type, categorized.references);
     }
+
+    // Build override relationships after all types are indexed
+    this.buildOverrideRelationships(categorized);
 
     return categorized;
   }
@@ -173,6 +182,72 @@ export class DocsService {
         references.get(typeName)!.add(type.name);
       }
     }
+  }
+
+  private buildOverrideRelationships(categorized: CategorizedDocs) {
+    // First pass: identify override methods and what they override
+    for (const type of categorized.typeIndex.values()) {
+      if (!type.base_types || type.base_types.length === 0) continue;
+
+      for (const member of type.members) {
+        if (member.modifiers.includes('override')) {
+          const memberKey = `${type.name}.${member.name}`;
+          
+          // Find what this method overrides in base classes
+          const overridesMethod = this.findOverriddenMethod(type, member, categorized);
+          
+          if (overridesMethod) {
+            categorized.overrides.set(memberKey, {
+              overrides: overridesMethod,
+              overriddenBy: []
+            });
+          }
+        }
+      }
+    }
+
+    // Second pass: build reverse relationships (what overrides this method)
+    for (const [memberKey, overrideInfo] of categorized.overrides.entries()) {
+      if (overrideInfo.overrides) {
+        const baseMemberKey = overrideInfo.overrides;
+        
+        // Get or create override info for the base method
+        let baseOverrideInfo = categorized.overrides.get(baseMemberKey);
+        if (!baseOverrideInfo) {
+          baseOverrideInfo = { overriddenBy: [] };
+          categorized.overrides.set(baseMemberKey, baseOverrideInfo);
+        }
+        
+        // Add this method to the base method's overridden list
+        baseOverrideInfo.overriddenBy.push(memberKey);
+      }
+    }
+  }
+
+  private findOverriddenMethod(type: Type, member: Member, categorized: CategorizedDocs): string | undefined {
+    // Look through base types to find the method being overridden
+    for (const baseTypeName of type.base_types) {
+      const baseType = categorized.typeIndex.get(baseTypeName);
+      if (!baseType) continue;
+
+      // Look for method with same name in base type
+      const baseMethod = baseType.members.find(m => 
+        m.name === member.name && 
+        (m.kind === member.kind || (m.kind === 'method' && member.kind === 'method'))
+      );
+
+      if (baseMethod) {
+        return `${baseType.name}.${baseMethod.name}`;
+      }
+
+      // Recursively check base types of the base type
+      if (baseType.base_types && baseType.base_types.length > 0) {
+        const result = this.findOverriddenMethod(baseType, member, categorized);
+        if (result) return result;
+      }
+    }
+
+    return undefined;
   }
 
   getDocsData() {
@@ -270,6 +345,31 @@ export class DocsService {
 
   getCategoryRoute(category: string): string {
     return `/docs/category/${category}`;
+  }
+
+  getInheritance(typeName: string): string[] {
+    const data = this.categorizedData();
+    if (!data) return [];
+    
+    const inheritance = data.inheritance.get(typeName);
+    return inheritance ? inheritance : [];
+  }
+
+  getOverrideInfo(typeName: string, memberName: string): OverrideInfo | null {
+    const data = this.categorizedData();
+    if (!data) return null;
+    
+    const memberKey = `${typeName}.${memberName}`;
+    return data.overrides.get(memberKey) || null;
+  }
+
+  // Parse a member key like "TypeName.MethodName" into parts
+  parseMemberKey(memberKey: string): { typeName: string; memberName: string } {
+    const lastDotIndex = memberKey.lastIndexOf('.');
+    return {
+      typeName: memberKey.substring(0, lastDotIndex),
+      memberName: memberKey.substring(lastDotIndex + 1)
+    };
   }
 
   getNamespaces(): Namespace[] {

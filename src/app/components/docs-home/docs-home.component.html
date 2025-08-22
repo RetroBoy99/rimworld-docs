@@ -58,6 +58,11 @@
                  <span *ngFor="let modifier of type.modifiers.slice(0, 3)" class="modifier-tag small">{{ modifier }}</span>
                  <span *ngIf="type.modifiers.length > 3" class="more-modifiers">+{{ type.modifiers.length - 3 }}</span>
                </div>
+               <div class="base-types" *ngIf="type.base_types && type.base_types.length > 0">
+                 <span class="inheritance-label">extends</span>
+                 <span class="base-type">{{ type.base_types[0] }}</span>
+                 <span *ngIf="type.base_types.length > 1" class="more-bases">+{{ type.base_types.length - 1 }}</span>
+               </div>
              </div>
            </a>
         </div>

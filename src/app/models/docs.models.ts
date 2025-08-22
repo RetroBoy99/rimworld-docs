@@ -35,6 +35,7 @@ export interface CategorizedDocs {
   memberIndex: Map<string, Member[]>; // typeName -> Members[]
   inheritance: Map<string, string[]>; // typeName -> base types (if available)
   references: Map<string, Set<string>>; // typeName -> types that reference it
+  overrides: Map<string, OverrideInfo>; // "TypeName.MethodName" -> override info
 }
 
 export interface Namespace {
@@ -48,6 +49,7 @@ export interface Type {
   kind: 'class' | 'interface' | 'struct' | 'enum';
   access_modifier: string;
   modifiers: string[];
+  base_types: string[];
   file: string;
   line: number;
   member_count: number;
@@ -68,6 +70,11 @@ export interface Parameter {
   name: string;
   type: string;
   default_value?: string;
+}
+
+export interface OverrideInfo {
+  overrides?: string;        // "BaseClass.MethodName" - what this method overrides
+  overriddenBy: string[];    // ["Derived1.Method", "Derived2.Method"] - what overrides this
 }
 
 export interface SearchResult {

@@ -34,6 +34,18 @@
             <span class="label">Modifiers:</span>
             <span *ngFor="let modifier of type()!.modifiers" class="modifier-tag">{{ modifier }}</span>
           </div>
+          
+          <div class="base-types" *ngIf="type()!.base_types && type()!.base_types.length > 0">
+            <span class="label">Inherits from:</span>
+            <a 
+              *ngFor="let baseType of type()!.base_types" 
+              [routerLink]="typeExists(baseType) ? ['/docs/type', baseType] : null"
+              [class]="typeExists(baseType) ? 'base-type-link' : 'base-type-tag'"
+              [title]="typeExists(baseType) ? 'Go to ' + baseType : baseType + ' (external type)'"
+            >
+              {{ baseType }}
+            </a>
+          </div>
         </div>
       </div>
     </div>
@@ -71,6 +83,40 @@
                     <code>{{ member.return_type }}</code>
                   </ng-template>
                 </span>
+              </div>
+
+              <!-- Override Information -->
+              <div *ngIf="getOverrideInfo(member.name) as overrideInfo" class="override-section">
+                <!-- What this method overrides -->
+                <div *ngIf="overrideInfo.overrides" class="overrides-info">
+                  <span class="override-label">🔄 Overrides:</span>
+                  <a 
+                    [routerLink]="['/docs/type', parseMemberKey(overrideInfo.overrides).typeName]"
+                    class="override-link"
+                    [title]="'Go to base method in ' + parseMemberKey(overrideInfo.overrides).typeName"
+                  >
+                    {{ overrideInfo.overrides }}
+                  </a>
+                </div>
+
+                <!-- What overrides this method -->
+                <div *ngIf="overrideInfo.overriddenBy.length > 0" class="overridden-by-info">
+                  <div class="overridden-by-header" (click)="toggleOverriddenBy(member.name)">
+                    <span class="override-label">🔽 Overridden by {{ overrideInfo.overriddenBy.length }} class{{ overrideInfo.overriddenBy.length !== 1 ? 'es' : '' }}</span>
+                    <span class="toggle-icon">{{ isOverriddenByExpanded(member.name) ? '▼' : '▶' }}</span>
+                  </div>
+                  
+                  <div *ngIf="isOverriddenByExpanded(member.name)" class="overridden-by-list">
+                    <a 
+                      *ngFor="let overriddenBy of overrideInfo.overriddenBy"
+                      [routerLink]="['/docs/type', parseMemberKey(overriddenBy).typeName]"
+                      class="override-link"
+                      [title]="'Go to overridden method in ' + parseMemberKey(overriddenBy).typeName"
+                    >
+                      {{ overriddenBy }}
+                    </a>
+                  </div>
+                </div>
               </div>
 
               <div *ngIf="getReferencedTypes(member.signature).length > 0" class="referenced-types-section">

@@ -17,6 +17,9 @@ export class TypeViewComponent implements OnInit {
   category = signal<string>('');
   loading = signal(false);
   error = signal<string | null>(null);
+  
+  // State for collapsible override sections
+  private expandedOverriddenBy = new Set<string>();
 
   constructor(
     private docsService: DocsService,
@@ -104,5 +107,27 @@ export class TypeViewComponent implements OnInit {
 
   getCategoryRoute(): string {
     return this.docsService.getCategoryRoute(this.category());
+  }
+
+  getOverrideInfo(memberName: string) {
+    const typeName = this.type()?.name;
+    if (!typeName) return null;
+    return this.docsService.getOverrideInfo(typeName, memberName);
+  }
+
+  parseMemberKey(memberKey: string) {
+    return this.docsService.parseMemberKey(memberKey);
+  }
+
+  toggleOverriddenBy(memberName: string) {
+    if (this.expandedOverriddenBy.has(memberName)) {
+      this.expandedOverriddenBy.delete(memberName);
+    } else {
+      this.expandedOverriddenBy.add(memberName);
+    }
+  }
+
+  isOverriddenByExpanded(memberName: string): boolean {
+    return this.expandedOverriddenBy.has(memberName);
   }
 }

@@ -7,6 +7,7 @@ Focused on extracting classes and their members with explicit access modifiers.
 import os
 import re
 import json
+import gzip
 import argparse
 from pathlib import Path
 from datetime import datetime
@@ -34,18 +35,21 @@ class TypeInfo:
     file_path: str
     line_number: int
     members: List[Member]
+    base_types: List[str] = None  # Base classes and interfaces
 
 
 class SimpleCSParser:
     def __init__(self):
         # Simple, focused patterns
         
-        # Type patterns: require access modifier
+        # Type patterns: require access modifier and capture inheritance
         self.class_pattern = re.compile(
             r'^\s*(public|internal|protected|private)\s+'     # REQUIRED access modifier
             r'(?:(static|sealed|abstract|partial)\s+)*'       # Optional modifiers
             r'class\s+'                                        # 'class' keyword
             r'([A-Za-z_]\w*)'                                 # Class name
+            r'(?:\s*:\s*([^{]+?))?'                           # Optional inheritance ": BaseClass, IInterface"
+            r'\s*(?:\{|$)'                                    # Opening brace or end of line
         )
         
         self.interface_pattern = re.compile(
@@ -53,6 +57,8 @@ class SimpleCSParser:
             r'(?:(partial)\s+)*'                              # Optional modifiers
             r'interface\s+'                                   # 'interface' keyword
             r'([A-Za-z_]\w*)'                                 # Interface name
+            r'(?:\s*:\s*([^{]+?))?'                           # Optional inheritance ": IBaseInterface"
+            r'\s*(?:\{|$)'                                    # Opening brace or end of line
         )
         
         self.struct_pattern = re.compile(
@@ -60,6 +66,8 @@ class SimpleCSParser:
             r'(?:(partial|readonly)\s+)*'                     # Optional modifiers
             r'struct\s+'                                      # 'struct' keyword
             r'([A-Za-z_]\w*)'                                 # Struct name
+            r'(?:\s*:\s*([^{]+?))?'                           # Optional inheritance ": IInterface"
+            r'\s*(?:\{|$)'                                    # Opening brace or end of line
         )
         
         self.enum_pattern = re.compile(
@@ -131,6 +139,23 @@ class SimpleCSParser:
         if '//' in line:
             line = line[:line.index('//')]
         return line.strip()
+    
+    def parse_base_types(self, inheritance_str: str) -> List[str]:
+        """Parse inheritance string into list of base types."""
+        if not inheritance_str:
+            return []
+        
+        # Split by comma and clean up each type
+        base_types = []
+        for base_type in inheritance_str.split(','):
+            base_type = base_type.strip()
+            if base_type and not base_type.startswith('//'):  # Skip comments
+                # Remove generic type parameters for cleaner output
+                if '<' in base_type:
+                    base_type = base_type[:base_type.index('<')]
+                base_types.append(base_type)
+        
+        return base_types
 
     def parse_file(self, file_path: Path) -> List[TypeInfo]:
         """Parse a single C# file and extract types (classes, interfaces, structs, enums)."""
@@ -189,7 +214,8 @@ class SimpleCSParser:
                     modifiers=[access_modifier],
                     file_path=str(file_path),
                     line_number=line_num,
-                    members=[]
+                    members=[],
+                    base_types=[]
                 )
                 types.append(current_type)
                 continue
@@ -199,10 +225,13 @@ class SimpleCSParser:
                 access_modifier = type_match.group(1)
                 modifiers_str = type_match.group(2) or ""
                 type_name = type_match.group(3)
+                inheritance_str = type_match.group(4) or ""
                 
                 modifiers = [access_modifier]
                 if modifiers_str:
                     modifiers.extend(modifiers_str.split())
+                
+                base_types = self.parse_base_types(inheritance_str)
                 
                 current_type = TypeInfo(
                     name=type_name,
@@ -211,7 +240,8 @@ class SimpleCSParser:
                     modifiers=modifiers,
                     file_path=str(file_path),
                     line_number=line_num,
-                    members=[]
+                    members=[],
+                    base_types=base_types
                 )
                 types.append(current_type)
                 continue
@@ -423,7 +453,7 @@ class SimpleCSParser:
         return all_types
 
 
-def generate_documentation(types: List[TypeInfo], output_file: str):
+def generate_documentation(types: List[TypeInfo], output_file: str, compress: bool = False):
     """Generate JSON documentation."""
     
     # Sort types by file path then by name
@@ -452,6 +482,7 @@ def generate_documentation(types: List[TypeInfo], output_file: str):
             'kind': type_info.kind,
             'access_modifier': type_info.access_modifier,
             'modifiers': type_info.modifiers,
+            'base_types': type_info.base_types or [],
             'file': type_info.file_path,
             'line': type_info.line_number,
             'member_count': len(sorted_members),
@@ -470,11 +501,35 @@ def generate_documentation(types: List[TypeInfo], output_file: str):
         }
         output_data['types'].append(type_data)
     
-    # Write JSON file
-    with open(output_file, 'w', encoding='utf-8') as f:
-        json.dump(output_data, f, indent=2, ensure_ascii=False)
+    # Convert to JSON string first
+    json_content = json.dumps(output_data, indent=2, ensure_ascii=False)
     
-    print(f"Generated documentation: {output_file}")
+    # Write file (compressed or uncompressed)
+    if compress:
+        # Add .gz extension if not present
+        if not output_file.endswith('.gz'):
+            output_file += '.gz'
+        
+        with gzip.open(output_file, 'wt', encoding='utf-8') as f:
+            f.write(json_content)
+        
+        # Calculate compression ratio
+        uncompressed_size = len(json_content.encode('utf-8'))
+        compressed_size = os.path.getsize(output_file)
+        compression_ratio = (1 - compressed_size / uncompressed_size) * 100
+        
+        print(f"Generated compressed documentation: {output_file}")
+        print(f"Uncompressed size: {uncompressed_size:,} bytes ({uncompressed_size / 1024 / 1024:.1f} MB)")
+        print(f"Compressed size: {compressed_size:,} bytes ({compressed_size / 1024 / 1024:.1f} MB)")
+        print(f"Compression ratio: {compression_ratio:.1f}%")
+    else:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(json_content)
+        
+        file_size = os.path.getsize(output_file)
+        print(f"Generated documentation: {output_file}")
+        print(f"File size: {file_size:,} bytes ({file_size / 1024 / 1024:.1f} MB)")
+    
     print(f"Total types: {output_data['total_types']}")
     print(f"Type breakdown: {output_data['type_counts']}")
     print(f"Total members: {output_data['total_members']}")
@@ -484,6 +539,8 @@ def main():
     parser = argparse.ArgumentParser(description='Enhanced C# Documentation Generator')
     parser.add_argument('--root', default='.', help='Root directory to scan')
     parser.add_argument('--output', default='docs_enhanced.json', help='Output JSON file')
+    parser.add_argument('--compress', '-c', action='store_true', 
+                       help='Compress output using gzip (adds .gz extension)')
     
     args = parser.parse_args()
     
@@ -495,11 +552,11 @@ def main():
     print(f"Scanning directory: {root_path}")
     
     # Parse C# files
-    parser = SimpleCSParser()
-    types = parser.scan_directory(root_path)
+    cs_parser = SimpleCSParser()
+    types = cs_parser.scan_directory(root_path)
     
     # Generate documentation
-    generate_documentation(types, args.output)
+    generate_documentation(types, args.output, compress=args.compress)
     
     return 0
 
