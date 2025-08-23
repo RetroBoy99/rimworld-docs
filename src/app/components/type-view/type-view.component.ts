@@ -4,11 +4,13 @@ import { RouterLink, ActivatedRoute, Router, NavigationEnd } from '@angular/rout
 import { DocsService } from '../../services/docs.service';
 import { Type, Member } from '../../models/docs.models';
 import { filter } from 'rxjs/operators';
+import { XmlUsageComponent } from '../xml-usage/xml-usage.component';
+import { TranslationUsageComponent } from '../translation-usage/translation-usage.component';
 
 @Component({
   selector: 'app-type-view',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, XmlUsageComponent, TranslationUsageComponent],
   templateUrl: './type-view.component.html',
   styleUrls: ['./type-view.component.scss']
 })
@@ -285,4 +287,29 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
     const filters = this.memberFilters();
     return kind in filters && filters[kind as keyof typeof filters];
   }
- }
+
+  // Method to extract translation keys from a signature
+  getTranslationKeysFromSignature(signature: string): string[] {
+    // Look for patterns like "SomeKey".Translate(...)
+    const translatePattern = /"([^"]+)"\.Translate/g;
+    const keys: string[] = [];
+    let match;
+    
+    while ((match = translatePattern.exec(signature)) !== null) {
+      keys.push(match[1]);
+    }
+    
+    return keys;
+  }
+
+  // Method to check if a member has translation keys
+  hasTranslationKeys(member: Member): boolean {
+    const keys = this.getTranslationKeysFromSignature(member.signature);
+    return keys.length > 0;
+  }
+
+  // Method to get translation keys for a member
+  getTranslationKeysForMember(member: Member): string[] {
+    return this.getTranslationKeysFromSignature(member.signature);
+  }
+}

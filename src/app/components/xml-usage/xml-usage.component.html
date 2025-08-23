@@ -1,0 +1,24 @@
+<div class="xml-usage" *ngIf="getXmlUsageCount() > 0">
+  <div class="xml-usage-header" (click)="toggleExpanded()">
+    <span class="label">📄 Used in {{ getXmlUsageCount() }} XML file{{ getXmlUsageCount() !== 1 ? 's' : '' }} ({{ getTagGroupsCount() }} tag group{{ getTagGroupsCount() !== 1 ? 's' : '' }})</span>
+    <span class="toggle-icon">{{ expanded() ? '▼' : '▶' }}</span>
+  </div>
+
+  <div *ngIf="expanded()" class="xml-usage-content">
+    <div *ngFor="let tagGroup of tagGroups()" class="tag-group">
+      <h4 class="tag-group-title">{{ tagGroup }}</h4>
+      <div class="xml-files-list">
+        <div *ngFor="let usage of getUsageByTagGroup(tagGroup)" class="xml-file-item">
+          <div class="xml-file-info">
+            <span class="xml-file-name">{{ getFileName(usage.xml_file) }}</span>
+            <span class="xml-file-path">{{ getDirectory(usage.xml_file) }}</span>
+            <span class="xml-line">Line {{ usage.xml_line }}</span>
+          </div>
+          <div class="xml-value">
+            <code>{{ usage.xml_value }}</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

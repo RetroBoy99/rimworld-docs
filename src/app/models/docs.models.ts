@@ -85,3 +85,35 @@ export interface SearchResult {
   matchType: 'name' | 'signature' | 'file';
   relevance: number;
 }
+
+// XML Class Links Models
+export interface XmlClassLink {
+  xml_value: string;
+  csharp_class: string;
+  csharp_file: string;
+  xml_file: string;
+  xml_line: number;
+}
+
+export interface XmlClassLinksIndex {
+  generated_at: string;
+  total_links: number;
+  unique_classes: number;
+  tag_groups: { [tagGroup: string]: XmlClassLink[] };
+}
+
+// Translation Links Models
+export interface TranslationUsage {
+  csharp_file: string;
+  csharp_line: number;
+  csharp_code: string;
+  xml_files: string[];
+}
+
+export interface TranslationLinksIndex {
+  generated_at: string;
+  total_translate_calls: number;
+  unique_translation_keys: number;
+  linked_translations: number;
+  translation_links: { [translationKey: string]: TranslationUsage[] };
+}

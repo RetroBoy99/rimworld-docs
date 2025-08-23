@@ -1,0 +1,138 @@
+.translation-usage {
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #404040;
+
+  .translation-usage-header {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      padding: 0 0.5rem;
+    }
+
+    .label {
+      font-weight: 500;
+      color: #81c784;
+      font-size: 0.875rem;
+    }
+
+    .toggle-icon {
+      color: #81c784;
+      font-size: 0.75rem;
+      transition: transform 0.2s ease;
+    }
+  }
+
+  .translation-usage-content {
+    margin-top: 0.5rem;
+    padding-left: 1rem;
+    border-left: 2px solid rgba(129, 199, 132, 0.3);
+    padding-left: 0.75rem;
+    margin-left: 0.5rem;
+
+    .usage-section {
+      margin-bottom: 1rem;
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+
+      .section-title {
+        margin: 0 0 0.5rem 0;
+        color: #81c784;
+        font-size: 0.9rem;
+        font-weight: 600;
+      }
+
+      .csharp-usage-list {
+        .csharp-usage-item {
+          background: #1a1a1a;
+          border: 1px solid #333;
+          border-radius: 4px;
+          padding: 0.5rem;
+          margin-bottom: 0.5rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          .csharp-file-info {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+            font-size: 0.8rem;
+
+            .csharp-file-name {
+              color: #4fc3f7;
+              font-weight: 500;
+              font-family: 'Courier New', monospace;
+            }
+
+            .csharp-file-path {
+              color: #888;
+              font-family: 'Courier New', monospace;
+            }
+
+            .csharp-line {
+              color: #666;
+              font-family: 'Courier New', monospace;
+              margin-left: auto;
+            }
+          }
+
+          .csharp-code {
+            code {
+              background: #2d2d2d;
+              color: #e0e0e0;
+              padding: 0.25rem 0.5rem;
+              border-radius: 3px;
+              font-family: 'Courier New', monospace;
+              font-size: 0.8rem;
+              border: 1px solid #404040;
+              display: block;
+              white-space: pre-wrap;
+              word-break: break-all;
+            }
+          }
+        }
+      }
+
+      .xml-files-list {
+        .xml-file-item {
+          background: #1a1a1a;
+          border: 1px solid #333;
+          border-radius: 4px;
+          padding: 0.5rem;
+          margin-bottom: 0.5rem;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          font-size: 0.8rem;
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+
+          .xml-file-name {
+            color: #ffb74d;
+            font-weight: 500;
+            font-family: 'Courier New', monospace;
+          }
+
+          .xml-file-path {
+            color: #888;
+            font-family: 'Courier New', monospace;
+          }
+        }
+      }
+    }
+  }
+}

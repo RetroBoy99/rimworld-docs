@@ -1,0 +1,204 @@
+<div class="xml-translation-stats">
+  <div *ngIf="loading()" class="loading">
+    <div class="spinner"></div>
+    <p>Loading XML and Translation data...</p>
+  </div>
+  
+  <div *ngIf="!loading() && error()" class="error">
+    <h2>Error</h2>
+    <p>{{ error() }}</p>
+    <button (click)="retry()" class="retry-btn">Retry</button>
+  </div>
+  
+  <div *ngIf="!loading() && !error()" class="stats-content">
+    <div class="breadcrumb">
+      <a routerLink="/docs">Documentation</a>
+      <span class="separator">/</span>
+      <span class="current">XML & Translation Stats</span>
+    </div>
+
+    <div class="stats-header">
+      <h1>XML & Translation Data</h1>
+      <p>Browse XML class usage and translation key usage in Rimworld</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tab-navigation">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'stats'"
+        (click)="setActiveTab('stats')"
+      >
+        📊 Statistics
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'xml'"
+        (click)="setActiveTab('xml')"
+      >
+        📄 XML Class Usage ({{ getXmlTagGroupsCount() }} groups)
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab() === 'translations'"
+        (click)="setActiveTab('translations')"
+      >
+        🌐 Translation Keys ({{ translationKeys().length }} keys)
+      </button>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="search-section" *ngIf="activeTab() !== 'stats'">
+      <input 
+        type="text" 
+        placeholder="Search..." 
+        [value]="searchQuery()"
+        (input)="searchQuery.set($event.target.value || '')"
+        class="search-input"
+      />
+    </div>
+
+    <!-- Statistics Tab -->
+    <div *ngIf="activeTab() === 'stats'" class="stats-grid">
+      <!-- XML Statistics -->
+      <div class="stats-card xml-stats" *ngIf="xmlStats()">
+        <div class="card-header">
+          <h2>📄 XML Class Usage</h2>
+          <span class="generated-at">Generated: {{ xmlStats()?.generatedAt | date:'short' }}</span>
+        </div>
+        
+        <div class="stats-metrics">
+          <div class="metric">
+            <span class="metric-value">{{ xmlStats()?.totalLinks }}</span>
+            <span class="metric-label">Total XML Links</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{ xmlStats()?.uniqueClasses }}</span>
+            <span class="metric-label">Unique Classes</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{ xmlStats()?.tagGroupCount }}</span>
+            <span class="metric-label">Tag Groups</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Translation Statistics -->
+      <div class="stats-card translation-stats" *ngIf="translationStats()">
+        <div class="card-header">
+          <h2>🌐 Translation Usage</h2>
+          <span class="generated-at">Generated: {{ translationStats()?.generatedAt | date:'short' }}</span>
+        </div>
+        
+        <div class="stats-metrics">
+          <div class="metric">
+            <span class="metric-value">{{ translationStats()?.totalTranslateCalls }}</span>
+            <span class="metric-label">Total Translate Calls</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{ translationStats()?.uniqueTranslationKeys }}</span>
+            <span class="metric-label">Unique Translation Keys</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">{{ translationStats()?.linkedTranslations }}</span>
+            <span class="metric-label">Linked Translations</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- XML Class Usage Tab -->
+    <div *ngIf="activeTab() === 'xml'" class="xml-browser">
+      <div class="browser-header">
+        <h2>XML Class Usage by Tag Groups</h2>
+        <p>Click on a tag group to see all XML files that use classes in that group</p>
+      </div>
+
+      <div class="tag-groups-list">
+        <div *ngFor="let groupEntry of getXmlGroupsArray()" class="tag-group-item">
+          <div class="group-header" (click)="toggleXmlGroup(groupEntry.name)">
+            <h3 class="group-name">{{ groupEntry.name }}</h3>
+            <div class="group-info">
+              <span class="link-count">{{ groupEntry.links.length }} usage{{ groupEntry.links.length !== 1 ? 's' : '' }}</span>
+              <span class="toggle-icon">{{ isXmlGroupExpanded(groupEntry.name) ? '▼' : '▶' }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="isXmlGroupExpanded(groupEntry.name)" class="group-content">
+            <div *ngFor="let link of groupEntry.links" class="xml-link-item">
+              <div class="link-header">
+                <span class="csharp-class">{{ link.csharp_class }}</span>
+                <span class="xml-value">{{ link.xml_value }}</span>
+              </div>
+              <div class="link-details">
+                <span class="xml-file">{{ getFileName(link.xml_file) }}</span>
+                <span class="xml-path">{{ getDirectory(link.xml_file) }}</span>
+                <span class="xml-line">Line {{ link.xml_line }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Translation Keys Tab -->
+    <div *ngIf="activeTab() === 'translations'" class="translations-browser">
+      <div class="browser-header">
+        <h2>Translation Keys</h2>
+        <p>Click on a translation key to see its usage in C# code and XML files</p>
+      </div>
+
+      <div class="translation-keys-list">
+        <div *ngFor="let key of getFilteredTranslationKeys()" class="translation-key-item">
+          <div class="key-header" (click)="toggleTranslationKey(key)">
+            <h3 class="key-name">{{ key }}</h3>
+            <div class="key-info">
+              <span class="usage-count">{{ getTranslationUsageForKey(key).length }} usage{{ getTranslationUsageForKey(key).length !== 1 ? 's' : '' }}</span>
+              <span class="toggle-icon">{{ isTranslationKeyExpanded(key) ? '▼' : '▶' }}</span>
+            </div>
+          </div>
+
+          <div *ngIf="isTranslationKeyExpanded(key)" class="key-content">
+            <!-- C# Usage -->
+            <div class="usage-section">
+              <h4>C# Usage</h4>
+              <div *ngFor="let usage of getTranslationUsageForKey(key)" class="usage-item">
+                <div class="usage-header">
+                  <span class="csharp-file">{{ getFileName(usage.csharp_file) }}</span>
+                  <span class="csharp-path">{{ getDirectory(usage.csharp_file) }}</span>
+                  <span class="csharp-line">Line {{ usage.csharp_line }}</span>
+                </div>
+                <div class="usage-code">
+                  <code>{{ usage.csharp_code }}</code>
+                </div>
+              </div>
+            </div>
+
+            <!-- XML Files -->
+            <div class="usage-section" *ngIf="getXmlFilesForTranslationKey(key).length > 0">
+              <h4>XML Files</h4>
+              <div *ngFor="let xmlFile of getXmlFilesForTranslationKey(key)" class="xml-file-item">
+                <span class="xml-file-name">{{ getFileName(xmlFile) }}</span>
+                <span class="xml-file-path">{{ getDirectory(xmlFile) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="info-section" *ngIf="activeTab() === 'stats'">
+      <h3>How to Use</h3>
+      <div class="info-grid">
+        <div class="info-item">
+          <h4>XML Class Usage</h4>
+          <p>Switch to the "XML Class Usage" tab to browse all XML tag groups and see which classes are used in each group.</p>
+        </div>
+        <div class="info-item">
+          <h4>Translation Keys</h4>
+          <p>Switch to the "Translation Keys" tab to browse all translation keys and see their usage in C# code and XML files.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

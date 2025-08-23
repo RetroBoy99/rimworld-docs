@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, shareReplay, BehaviorSubject, of, forkJoin } from 'rxjs';
-import { DocsIndex, Namespace, Type, SearchResult, CategorizedDocs, Member, OverrideInfo } from '../models/docs.models';
+import { DocsIndex, Namespace, Type, SearchResult, CategorizedDocs, Member, OverrideInfo, XmlClassLinksIndex, TranslationLinksIndex, XmlClassLink, TranslationUsage } from '../models/docs.models';
 
 @Injectable({
   providedIn: 'root'
@@ -9,6 +9,8 @@ import { DocsIndex, Namespace, Type, SearchResult, CategorizedDocs, Member, Over
 export class DocsService {
   private docsData = signal<DocsIndex | null>(null);
   private categorizedData = signal<CategorizedDocs | null>(null);
+  private xmlClassLinksData = signal<XmlClassLinksIndex | null>(null);
+  private translationLinksData = signal<TranslationLinksIndex | null>(null);
   private loading = signal(false);
   private error = signal<string | null>(null);
   
@@ -100,6 +102,132 @@ export class DocsService {
       }),
       shareReplay(1)
     );
+  }
+
+  loadXmlClassLinks(): Observable<XmlClassLinksIndex> {
+    if (this.xmlClassLinksData()) {
+      return of(this.xmlClassLinksData()!);
+    }
+
+    return this.http.get<XmlClassLinksIndex>('assets/xml_class_links.json').pipe(
+      map(data => {
+        this.xmlClassLinksData.set(data);
+        return data;
+      }),
+      shareReplay(1)
+    );
+  }
+
+  loadTranslationLinks(): Observable<TranslationLinksIndex> {
+    if (this.translationLinksData()) {
+      return of(this.translationLinksData()!);
+    }
+
+    return this.http.get<TranslationLinksIndex>('assets/translation_links.json').pipe(
+      map(data => {
+        this.translationLinksData.set(data);
+        return data;
+      }),
+      shareReplay(1)
+    );
+  }
+
+  // Get XML usage for a specific class
+  getXmlUsageForClass(className: string): XmlClassLink[] {
+    const xmlData = this.xmlClassLinksData();
+    if (!xmlData) return [];
+
+    const results: XmlClassLink[] = [];
+    for (const [tagGroup, links] of Object.entries(xmlData.tag_groups)) {
+      for (const link of links) {
+        if (link.csharp_class === className) {
+          results.push(link);
+        }
+      }
+    }
+    return results;
+  }
+
+  // Get all XML tag groups that use a specific class
+  getXmlTagGroupsForClass(className: string): string[] {
+    const xmlData = this.xmlClassLinksData();
+    if (!xmlData) return [];
+
+    const tagGroups = new Set<string>();
+    for (const [tagGroup, links] of Object.entries(xmlData.tag_groups)) {
+      for (const link of links) {
+        if (link.csharp_class === className) {
+          tagGroups.add(tagGroup);
+        }
+      }
+    }
+    return Array.from(tagGroups);
+  }
+
+  // Get translation usage for a specific key
+  getTranslationUsageForKey(translationKey: string): TranslationUsage[] {
+    const translationData = this.translationLinksData();
+    if (!translationData) return [];
+
+    return translationData.translation_links[translationKey] || [];
+  }
+
+  // Get all translation keys that are used in a specific C# file
+  getTranslationKeysForFile(csharpFile: string): string[] {
+    const translationData = this.translationLinksData();
+    if (!translationData) return [];
+
+    const keys: string[] = [];
+    for (const [key, usages] of Object.entries(translationData.translation_links)) {
+      for (const usage of usages) {
+        if (usage.csharp_file === csharpFile) {
+          keys.push(key);
+          break; // Only add each key once per file
+        }
+      }
+    }
+    return keys;
+  }
+
+  // Get all XML files that use a specific translation key
+  getXmlFilesForTranslationKey(translationKey: string): string[] {
+    const translationData = this.translationLinksData();
+    if (!translationData) return [];
+
+    const xmlFiles = new Set<string>();
+    const usages = translationData.translation_links[translationKey] || [];
+    for (const usage of usages) {
+      for (const xmlFile of usage.xml_files) {
+        xmlFiles.add(xmlFile);
+      }
+    }
+    return Array.from(xmlFiles);
+  }
+
+  // Get statistics for XML usage
+  getXmlUsageStats() {
+    const xmlData = this.xmlClassLinksData();
+    if (!xmlData) return null;
+
+    return {
+      totalLinks: xmlData.total_links,
+      uniqueClasses: xmlData.unique_classes,
+      tagGroupCount: Object.keys(xmlData.tag_groups).length,
+      generatedAt: xmlData.generated_at
+    };
+  }
+
+  // Get statistics for translation usage
+  getTranslationUsageStats() {
+    const translationData = this.translationLinksData();
+    if (!translationData) return null;
+
+    return {
+      totalTranslateCalls: translationData.total_translate_calls,
+      uniqueTranslationKeys: translationData.unique_translation_keys,
+      linkedTranslations: translationData.linked_translations,
+      generatedAt: translationData.generated_at
+    };
   }
 
   private storeFullDataForLazyLoading(fullData: DocsIndex) {

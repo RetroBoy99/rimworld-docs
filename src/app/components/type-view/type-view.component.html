@@ -64,6 +64,9 @@
               </a>
             </div>
           </div>
+
+          <!-- XML Usage Section -->
+          <app-xml-usage [className]="type()!.name"></app-xml-usage>
         </div>
       </div>
     </div>
@@ -166,6 +169,11 @@
                     </a>
                   </div>
                 </div>
+              </div>
+
+              <!-- Translation Usage -->
+              <div *ngFor="let translationKey of getTranslationKeysForMember(member)" class="translation-usage-section">
+                <app-translation-usage [translationKey]="translationKey"></app-translation-usage>
               </div>
 
               <div *ngIf="getReferencedTypes(member.signature).length > 0" class="referenced-types-section">
