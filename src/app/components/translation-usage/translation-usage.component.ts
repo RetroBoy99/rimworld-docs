@@ -39,7 +39,7 @@ export class TranslationUsageComponent implements OnInit {
         this.xmlFiles.set(xmlFiles);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading translation usage:', err);
         this.loading.set(false);
       }

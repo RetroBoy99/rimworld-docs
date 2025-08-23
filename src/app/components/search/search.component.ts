@@ -53,14 +53,14 @@ export class SearchComponent implements OnInit {
             this.searchResults.set(results);
             this.loading.set(false);
           },
-          error: (err) => {
+          error: (err: any) => {
             console.error('Error during search:', err);
             this.loading.set(false);
             this.searchResults.set([]);
           }
         });
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading docs for search:', err);
         this.loading.set(false);
         this.searchResults.set([]);

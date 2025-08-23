@@ -44,7 +44,7 @@ export class CommentDisplayComponent implements OnInit, OnChanges {
         this.comment.set(comment);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading comment:', err);
         this.loading.set(false);
       }

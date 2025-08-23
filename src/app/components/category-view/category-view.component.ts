@@ -19,7 +19,6 @@ export class CategoryViewComponent implements OnInit {
   
   // Pagination
   currentPage = signal(0);
-  totalPages = signal(0);
   totalTypes = signal(0);
   loadingMore = signal(false);
   
@@ -48,17 +47,25 @@ export class CategoryViewComponent implements OnInit {
     this.docsService.loadDocs().subscribe({
       next: () => {
         // Load all types for filtering
-        const allCategoryTypes = this.docsService.getTypesByCategory(category);
-        this.allTypes.set(allCategoryTypes);
-        
-        // Initialize modifier filters based on available modifiers
-        this.initializeModifierFilters(allCategoryTypes);
-        
-        // Apply filters and load initial page
-        this.applyFiltersAndUpdateDisplay();
-        this.loading.set(false);
+        this.docsService.getAllTypesByCategory(category).subscribe({
+          next: (allCategoryTypes: Type[]) => {
+            this.allTypes.set(allCategoryTypes);
+            
+            // Initialize modifier filters based on available modifiers
+            this.initializeModifierFilters(allCategoryTypes);
+            
+            // Apply filters and load initial page
+            this.applyFiltersAndUpdateDisplay();
+            this.loading.set(false);
+          },
+          error: (err: any) => {
+            this.error.set('Failed to load category data');
+            this.loading.set(false);
+            console.error('Error loading category types:', err);
+          }
+        });
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error.set('Failed to load category data');
         this.loading.set(false);
         console.error('Error loading category:', err);
@@ -66,33 +73,20 @@ export class CategoryViewComponent implements OnInit {
     });
   }
 
-  private loadTypes(page: number) {
-    this.docsService.getTypesByCategoryPaginated(this.category(), page).subscribe({
-      next: (types) => {
-        if (page === 0) {
-          this.types.set(types);
-        } else {
-          this.types.update(current => [...current, ...types]);
-        }
-        this.currentPage.set(page);
-        this.loadingMore.set(false);
-      },
-      error: (err) => {
-        console.error('Error loading types:', err);
-        this.loadingMore.set(false);
-      }
-    });
-  }
+
 
   loadMoreTypes() {
     if (this.hasMoreTypes()) {
       this.loadingMore.set(true);
-      this.loadTypes(this.currentPage() + 1);
+      const filteredTypes = this.getFilteredTypes();
+      this.loadFilteredTypesPage(this.currentPage() + 1, filteredTypes);
     }
   }
 
   hasMoreTypes(): boolean {
-    return this.currentPage() < this.totalPages() - 1;
+    const filteredTypes = this.getFilteredTypes();
+    const totalPages = Math.ceil(filteredTypes.length / 50);
+    return this.currentPage() < totalPages - 1;
   }
 
   getTypeIcon(type: Type): string {
@@ -137,9 +131,25 @@ export class CategoryViewComponent implements OnInit {
 
   private applyFiltersAndUpdateDisplay(): void {
     const filteredTypes = this.getFilteredTypes();
-    this.types.set(filteredTypes.slice(0, 50)); // Show first 50
     this.totalTypes.set(filteredTypes.length);
     this.currentPage.set(0);
+    
+    // Load first page of filtered types
+    this.loadFilteredTypesPage(0, filteredTypes);
+  }
+
+  private loadFilteredTypesPage(page: number, filteredTypes: Type[]): void {
+    const startIndex = page * 50;
+    const endIndex = startIndex + 50;
+    const pageTypes = filteredTypes.slice(startIndex, endIndex);
+    
+    if (page === 0) {
+      this.types.set(pageTypes);
+    } else {
+      this.types.update(current => [...current, ...pageTypes]);
+    }
+    this.currentPage.set(page);
+    this.loadingMore.set(false);
   }
 
   private getFilteredTypes(): Type[] {

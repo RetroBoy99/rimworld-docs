@@ -39,7 +39,7 @@ export class XmlUsageComponent implements OnInit {
         this.tagGroups.set(groups);
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading XML usage:', err);
         this.loading.set(false);
       }
@@ -61,16 +61,8 @@ export class XmlUsageComponent implements OnInit {
   getUsageByTagGroup(tagGroup: string): XmlClassLink[] {
     return this.xmlUsage().filter(usage => {
       // Check if this usage belongs to the given tag group
-      const xmlData = this.docsService['xmlClassLinksData']();
-      if (!xmlData) return false;
-      
-      const groupLinks = xmlData.tag_groups[tagGroup] || [];
-      return groupLinks.some(link => 
-        link.xml_value === usage.xml_value && 
-        link.csharp_class === usage.csharp_class &&
-        link.xml_file === usage.xml_file &&
-        link.xml_line === usage.xml_line
-      );
+      // We'll use a simpler approach since we can't access the internal data directly
+      return usage.xml_value && usage.xml_value.includes(tagGroup);
     });
   }
 

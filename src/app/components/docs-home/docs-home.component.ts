@@ -44,7 +44,7 @@ export class DocsHomeComponent implements OnInit {
         });
         this.loading.set(false);
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error.set('Failed to load documentation data');
         this.loading.set(false);
         console.error('Error loading docs:', err);

@@ -212,7 +212,7 @@
       
       <div *ngIf="type()!.members.length > 0 && getFilteredMembers().length === 0" class="no-filtered-members">
         <p>No members match the current filters.</p>
-        <button class="clear-filters-btn" (click)="memberFilters.set({method: true, property: true, field: true, constructor: true})">
+        <button class="clear-filters-btn" (click)="clearMemberFilters()">
           Clear Filters
         </button>
       </div>

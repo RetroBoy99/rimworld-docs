@@ -28,13 +28,8 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
    // State for collapsible inheritance sections
    private expandedDerivedTypes = new Set<string>();
    
-   // Filter state for members
-   memberFilters = signal({
-     method: true,
-     property: true,
-     field: true,
-     constructor: true
-   });
+     // Filter state for members
+  memberFilters = signal<{[key: string]: boolean}>({});
 
   constructor(
     private docsService: DocsService,
@@ -73,12 +68,15 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
           this.namespace.set(result.namespace);
           this.category.set(result.category);
           
+          // Initialize member filters based on available member kinds
+          this.initializeMemberFilters(result.type);
+          
           // Load comments for this type
           this.docsService.loadComments().subscribe({
             next: () => {
               this.loading.set(false);
             },
-            error: (err) => {
+            error: (err: any) => {
               console.error('Error loading comments:', err);
               this.loading.set(false);
             }
@@ -88,7 +86,7 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
           this.loading.set(false);
         }
       },
-      error: (err) => {
+      error: (err: any) => {
         this.error.set('Failed to load type data');
         this.loading.set(false);
         console.error('Error loading type:', err);
@@ -297,6 +295,33 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
   isMemberFilterActive(kind: string): boolean {
     const filters = this.memberFilters();
     return kind in filters && filters[kind as keyof typeof filters];
+  }
+
+  private initializeMemberFilters(type: Type): void {
+    const memberKinds = new Set(type.members.map(m => m.kind));
+    const filters: {[key: string]: boolean} = {};
+    
+    // Initialize all member kinds to true
+    memberKinds.forEach(kind => {
+      filters[kind] = true;
+    });
+    
+    this.memberFilters.set(filters);
+  }
+
+  clearMemberFilters(): void {
+    const type = this.type();
+    if (!type) return;
+    
+    const memberKinds = new Set(type.members.map(m => m.kind));
+    const filters: {[key: string]: boolean} = {};
+    
+    // Set all member kinds to true
+    memberKinds.forEach(kind => {
+      filters[kind] = true;
+    });
+    
+    this.memberFilters.set(filters);
   }
 
   // Method to extract translation keys from a signature

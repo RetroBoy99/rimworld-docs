@@ -47,14 +47,14 @@ export class XmlTranslationStatsComponent implements OnInit {
             this.translationKeys.set(Object.keys(translationData.translation_links));
             this.loading.set(false);
           },
-          error: (err) => {
+          error: (err: any) => {
             console.error('Error loading translation stats:', err);
             this.error.set('Failed to load translation statistics');
             this.loading.set(false);
           }
         });
       },
-      error: (err) => {
+      error: (err: any) => {
         console.error('Error loading XML stats:', err);
         this.error.set('Failed to load XML statistics');
         this.loading.set(false);
