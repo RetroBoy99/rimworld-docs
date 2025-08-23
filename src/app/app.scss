@@ -120,6 +120,12 @@
           color: #ff6b35;
         }
       }
+
+      &.open {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+      }
     }
 
     &:hover .dropdown-menu {
