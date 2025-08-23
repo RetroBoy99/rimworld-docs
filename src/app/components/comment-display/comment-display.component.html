@@ -1,0 +1,11 @@
+<div class="comment-display" *ngIf="hasComment()">
+  <div class="comment-header" (click)="toggleExpanded()">
+    <span class="comment-icon" *ngIf="showIcon">📝</span>
+    <span class="comment-label">Developer Note</span>
+    <span class="toggle-icon">{{ expanded() ? '▼' : '▶' }}</span>
+  </div>
+
+  <div *ngIf="expanded()" class="comment-content">
+    <div class="comment-text">{{ comment() }}</div>
+  </div>
+</div>

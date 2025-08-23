@@ -15,11 +15,11 @@
       <div class="breadcrumb">
         <a routerLink="/docs">Documentation</a>
         <span class="separator">/</span>
-        <a [routerLink]="getCategoryRoute()">{{ getCategoryDisplayName() }}</a>
+        <a [routerLink]="['/docs/category', category()]">{{ category() }}</a>
         <span class="separator">/</span>
         <span class="current">{{ type()!.name }}</span>
       </div>
-
+      
       <div class="type-info">
         <div class="type-icon">{{ getTypeIcon(type()!) }}</div>
         <div class="type-details">
@@ -34,6 +34,12 @@
             <span class="label">Modifiers:</span>
             <span *ngFor="let modifier of type()!.modifiers" class="modifier-tag">{{ modifier }}</span>
           </div>
+          
+          <!-- Type Comment -->
+          <app-comment-display 
+            [commentKey]="getTypeCommentKey()" 
+            [showIcon]="true">
+          </app-comment-display>
           
           <div class="base-types" *ngIf="type()!.base_types && type()!.base_types.length > 0">
             <span class="label">Inherits from:</span>
@@ -111,6 +117,12 @@
                 📋
               </button>
             </div>
+            
+            <!-- Member Comment -->
+            <app-comment-display 
+              [commentKey]="getMemberCommentKey(member)" 
+              [showIcon]="false">
+            </app-comment-display>
             
             <div class="member-modifiers" *ngIf="member.modifiers && member.modifiers.length > 0">
               <span *ngFor="let modifier of member.modifiers" class="modifier-tag small">{{ modifier }}</span>

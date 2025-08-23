@@ -1,0 +1,16 @@
+{
+  "comments": {
+    "Assembly-CSharp.Version.Verse.ThingDef": "Base class for all things in Rimworld - items, buildings, creatures, etc. This is the foundation of the game's object system.",
+    "Assembly-CSharp.Version.Verse.Pawn": "Represents any living entity in the game - colonists, animals, raiders, etc. Handles AI, health, and behavior.",
+    "Assembly-CSharp.Version.Verse.Pawn.Kill(DamageInfo, Hediff)": "Kills the pawn with the specified damage. Used for combat, accidents, and scripted events.",
+    "Assembly-CSharp.Version.Verse.Pawn.health": "HealthTracker component that manages injuries, diseases, and body parts. Critical for survival mechanics.",
+    "Assembly-CSharp.Version.Verse.CompProperties": "Base class for component properties. Components add functionality to things (like CompPower for electrical devices).",
+    "Assembly-CSharp.Version.Verse.CompProperties.compClass": "The actual component class that will be instantiated. Must inherit from ThingComp."
+  },
+  "metadata": {
+    "last_updated": "2024-01-15T10:30:00Z",
+    "total_comments": 10,
+    "version": "1.0",
+    "description": "Developer comments and notes for Rimworld documentation"
+  }
+}

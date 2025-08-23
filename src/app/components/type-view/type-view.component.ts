@@ -6,11 +6,12 @@ import { Type, Member } from '../../models/docs.models';
 import { filter } from 'rxjs/operators';
 import { XmlUsageComponent } from '../xml-usage/xml-usage.component';
 import { TranslationUsageComponent } from '../translation-usage/translation-usage.component';
+import { CommentDisplayComponent } from '../comment-display/comment-display.component';
 
 @Component({
   selector: 'app-type-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, XmlUsageComponent, TranslationUsageComponent],
+  imports: [CommonModule, RouterLink, XmlUsageComponent, TranslationUsageComponent, CommentDisplayComponent],
   templateUrl: './type-view.component.html',
   styleUrls: ['./type-view.component.scss']
 })
@@ -71,7 +72,17 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
           this.type.set(result.type);
           this.namespace.set(result.namespace);
           this.category.set(result.category);
-          this.loading.set(false);
+          
+          // Load comments for this type
+          this.docsService.loadComments().subscribe({
+            next: () => {
+              this.loading.set(false);
+            },
+            error: (err) => {
+              console.error('Error loading comments:', err);
+              this.loading.set(false);
+            }
+          });
         } else {
           this.error.set(`Type '${typeName}' not found`);
           this.loading.set(false);
@@ -243,15 +254,15 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
    }
 
    // Member filtering methods
-   getFilteredMembers(): Member[] {
-     const type = this.type();
-     if (!type) return [];
-     
-     const filters = this.memberFilters();
-     return type.members.filter(member => filters[member.kind as keyof typeof filters]);
-   }
+  getFilteredMembers(): Member[] {
+    const type = this.type();
+    if (!type) return [];
+    
+    const filters = this.memberFilters();
+    return type.members.filter(member => filters[member.kind as keyof typeof filters]);
+  }
 
-     toggleMemberFilter(kind: string): void {
+  toggleMemberFilter(kind: string): void {
     const currentFilters = this.memberFilters();
     if (kind in currentFilters) {
       this.memberFilters.set({
@@ -261,21 +272,21 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
     }
   }
 
-   getMemberKindCounts(): {[key: string]: number} {
-     const type = this.type();
-     if (!type) return {};
-     
-     return type.members.reduce((counts, member) => {
-       counts[member.kind] = (counts[member.kind] || 0) + 1;
-       return counts;
-     }, {} as {[key: string]: number});
-   }
+  getMemberKindCounts(): {[key: string]: number} {
+    const type = this.type();
+    if (!type) return {};
+    
+    return type.members.reduce((counts, member) => {
+      counts[member.kind] = (counts[member.kind] || 0) + 1;
+      return counts;
+    }, {} as {[key: string]: number});
+  }
 
-   getFilteredMemberCount(): number {
-     return this.getFilteredMembers().length;
-   }
+  getFilteredMemberCount(): number {
+    return this.getFilteredMembers().length;
+  }
 
-     getAllMemberKinds(): string[] {
+  getAllMemberKinds(): string[] {
     const type = this.type();
     if (!type) return [];
     
@@ -311,5 +322,27 @@ export class TypeViewComponent implements OnInit, AfterViewInit {
   // Method to get translation keys for a member
   getTranslationKeysForMember(member: Member): string[] {
     return this.getTranslationKeysFromSignature(member.signature);
+  }
+
+  // Method to generate comment key for the type
+  getTypeCommentKey(): string {
+    if (!this.type()) return '';
+    return this.docsService.generateTypeCommentKey(this.type()!);
+  }
+
+  // Method to generate comment key for a member
+  getMemberCommentKey(member: Member): string {
+    if (!this.type()) return '';
+    return this.docsService.generateMemberCommentKey(this.type()!, member);
+  }
+
+  // Method to check if a type has a comment
+  hasTypeComment(): boolean {
+    return this.docsService.getTypeComment(this.type()!) !== null;
+  }
+
+  // Method to check if a member has a comment
+  hasMemberComment(member: Member): boolean {
+    return this.docsService.getMemberComment(this.type()!, member) !== null;
   }
 }

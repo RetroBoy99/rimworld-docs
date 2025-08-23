@@ -1,7 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, shareReplay, BehaviorSubject, of, forkJoin } from 'rxjs';
-import { DocsIndex, Namespace, Type, SearchResult, CategorizedDocs, Member, OverrideInfo, XmlClassLinksIndex, TranslationLinksIndex, XmlClassLink, TranslationUsage } from '../models/docs.models';
+import { DocsIndex, Namespace, Type, SearchResult, CategorizedDocs, Member, OverrideInfo, XmlClassLinksIndex, TranslationLinksIndex, XmlClassLink, TranslationUsage, CommentsIndex } from '../models/docs.models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +11,7 @@ export class DocsService {
   private categorizedData = signal<CategorizedDocs | null>(null);
   private xmlClassLinksData = signal<XmlClassLinksIndex | null>(null);
   private translationLinksData = signal<TranslationLinksIndex | null>(null);
+  private commentsData = signal<CommentsIndex | null>(null);
   private loading = signal(false);
   private error = signal<string | null>(null);
   
@@ -130,6 +131,104 @@ export class DocsService {
       }),
       shareReplay(1)
     );
+  }
+
+  loadComments(): Observable<CommentsIndex> {
+    if (this.commentsData()) {
+      return of(this.commentsData()!);
+    }
+    return this.http.get<CommentsIndex>('assets/comments.json').pipe(
+      map(data => {
+        this.commentsData.set(data);
+        return data;
+      }),
+      shareReplay(1)
+    );
+  }
+
+  getCommentForKey(key: string): string | null {
+    const comments = this.commentsData();
+    if (!comments) return null;
+    
+    const comment = comments.comments[key] || null;
+    return comment;
+  }
+
+  getCommentsStats() {
+    const comments = this.commentsData();
+    if (!comments) return null;
+    return {
+      totalComments: comments.metadata.total_comments,
+      lastUpdated: comments.metadata.last_updated,
+      version: comments.metadata.version,
+      description: comments.metadata.description
+    };
+  }
+
+  // Helper methods to generate comment keys
+  generateTypeCommentKey(type: Type): string {
+    // Extract namespace from the file path if available
+    let namespace = 'Verse'; // Default namespace
+    if (type.file) {
+      const pathParts = type.file.split('\\');
+      if (pathParts.length > 1) {
+        namespace = pathParts[1]; // Usually the namespace is the second part
+      }
+    }
+    return `Assembly-CSharp.Version.${namespace}.${type.name}`;
+  }
+
+  generateMemberCommentKey(type: Type, member: Member): string {
+    const typeKey = this.generateTypeCommentKey(type);
+    
+    // For methods with parameters, include the parameter list
+    if (member.kind === 'method' || member.kind === 'constructor') {
+      const paramsMatch = member.signature.match(/\(([^)]*)\)/);
+      if (paramsMatch && paramsMatch[1].trim()) {
+        // Extract parameter types more accurately, handling nullable types and default values
+        const params = paramsMatch[1].split(',').map(p => {
+          const param = p.trim();
+          // Remove default values (everything after =)
+          const paramWithoutDefault = param.split('=')[0].trim();
+          // Look for the type name (handle nullable types like DamageInfo?)
+          const typeMatch = paramWithoutDefault.match(/^([A-Za-z_][A-Za-z0-9_]*)/);
+          return typeMatch ? typeMatch[1] : 'object';
+        }).join(', ');
+        return `${typeKey}.${member.name}(${params})`;
+      }
+    }
+    
+    // Default case: no parameters or non-method
+    return `${typeKey}.${member.name}`;
+  }
+
+  getTypeComment(type: Type): string | null {
+    return this.getCommentForKey(this.generateTypeCommentKey(type));
+  }
+
+  getMemberComment(type: Type, member: Member): string | null {
+    return this.getCommentForKey(this.generateMemberCommentKey(type, member));
+  }
+
+  getAllComments(): { [key: string]: string } {
+    const comments = this.commentsData();
+    return comments ? comments.comments : {};
+  }
+
+  searchComments(query: string): { key: string; comment: string }[] {
+    const comments = this.commentsData();
+    if (!comments) return [];
+    
+    const results: { key: string; comment: string }[] = [];
+    const lowerQuery = query.toLowerCase();
+    
+    for (const [key, comment] of Object.entries(comments.comments)) {
+      if (key.toLowerCase().includes(lowerQuery) || comment.toLowerCase().includes(lowerQuery)) {
+        results.push({ key, comment });
+      }
+    }
+    
+    return results;
   }
 
   // Get XML usage for a specific class
@@ -644,11 +743,9 @@ export class DocsService {
     // Check cache first
     const cacheKey = query.toLowerCase();
     if (this.searchCache.has(cacheKey)) {
-      console.log('Search results from cache for:', query);
       return of(this.searchCache.get(cacheKey)!);
     }
 
-    console.log('Starting search for:', query);
     return new Observable(observer => {
       const results: SearchResult[] = [];
       const lowerQuery = query.toLowerCase();
@@ -667,8 +764,6 @@ export class DocsService {
           
           // Cache results
           this.searchCache.set(cacheKey, sortedResults);
-          console.log(`Search completed: found ${sortedResults.length} results (limited from ${results.length})`);
-          
           observer.next(sortedResults);
           observer.complete();
           return;

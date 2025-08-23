@@ -117,3 +117,14 @@ export interface TranslationLinksIndex {
   linked_translations: number;
   translation_links: { [translationKey: string]: TranslationUsage[] };
 }
+
+// Comments Models
+export interface CommentsIndex {
+  comments: { [key: string]: string };
+  metadata: {
+    last_updated: string;
+    total_comments: number;
+    version: string;
+    description: string;
+  };
+}
